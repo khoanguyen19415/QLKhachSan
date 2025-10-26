@@ -1,0 +1,205 @@
+/* admin.css - giao diện trang quản trị khách sạn */
+
+body {
+  background-color: #f8f9fa;
+}
+
+h2 {
+  color: #0d6efd;
+}
+
+.card {
+  border-radius: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.sidebar {
+  height: 100vh;
+  padding: 10px;
+  background: #fff;
+  border-right: 1px solid #dee2e6;
+}
+.nav-link {
+  border-radius: 8px;
+  padding: 10px 12px;
+  transition: 0.3s;
+}
+
+.nav-link:hover {
+  background-color: #0d6efd;
+  color: #fff !important;
+}
+
+.nav-link.active {
+  background-color: #0d6efd;
+  color: #fff !important;
+}
+
+.footer {
+  background: linear-gradient(180deg, #007bff 0%, #0056d6 100%);
+  color: #fff;
+  padding: 40px 0 20px;
+  text-align: center;
+  margin-top: 60px;
+}
+
+.footer-container {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-left h3 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.footer-left p {
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+.footer-right h4 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.footer-right ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-right li {
+  font-size: 15px;
+  margin: 5px 0;
+  transition: color 0.3s ease;
+}
+
+.footer-right li:hover {
+  color: #ffeb3b;
+  cursor: pointer;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  margin-top: 30px;
+  padding-top: 10px;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.container{
+    flex: 1;
+}
+/* ---------------- Sidebar (Cải tiến đẹp hơn) ---------------- */
+.sidebar {
+  width: 230px;
+  height: 100vh;
+  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+  border-right: 1px solid #dee2e6;
+  position: sticky;
+  top: 0;
+  left: 0;
+  padding: 25px 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.sidebar h5 {
+  color: #0d6efd;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: center;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #0d6efd20;
+}
+
+/* Liên kết menu */
+.sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 12px 18px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  margin-bottom: 6px;
+}
+
+.sidebar .nav-link i {
+  font-size: 1.2rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+.sidebar .nav-link:hover {
+  background-color: #e9f2ff;
+  color: #0d6efd;
+  transform: translateX(4px);
+}
+
+.sidebar .nav-link.active {
+  background-color: #0d6efd;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 3px 8px rgba(13, 110, 253, 0.25);
+}
+
+.sidebar .nav-link.active i {
+  color: #fff;
+}
+
+/* Nút Đăng xuất */
+.sidebar .nav-link.text-danger {
+  margin-top: auto;
+  font-weight: 600;
+  color: #dc3545 !important;
+}
+.sidebar .nav-link.text-danger:hover {
+  background-color: #ffe5e9;
+  transform: translateX(4px);
+}
+table.table {
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+table.table th {
+    background-color: #0d6efd !important;
+    color: #fff;
+}
+
+.status-available,
+.status-unavailable {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+/*.status-available {
+    background-color: #28a745;
+}
+
+.status-unavailable {
+    background-color: #dc3545;
+}*/
+
+
