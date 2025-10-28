@@ -35,6 +35,7 @@
                     </button>
                     <input type="text" class="form-control w-25" placeholder="Tìm kiếm phòng...">
                 </div>
+                
 
                 <!-- Bảng danh sách phòng -->
                 <table class="table table-hover table-bordered align-middle">
@@ -62,6 +63,9 @@
                                     ${p.trangThai}
                                 </td>
                                 <td>
+                                    <a class="btn btn-sm btn-primary"href="QL-CTPhong?action=view&id=${p.maPhong}">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
                                     <button class="btn btn-sm btn-warning"><i class="bi bi-pencil-square"></i></button>
                                     <a class="btn btn-sm btn-danger" href="QL-Phong?action=delete&id=${p.maPhong}">
                                         <i class="bi bi-trash"></i>

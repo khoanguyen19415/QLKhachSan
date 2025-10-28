@@ -121,10 +121,8 @@ GO
 INSERT INTO ChiTietPhong (MaPhong, TienNghi, MoTa)
 VALUES
 (1, N'Tivi màn hình phẳng', N'Kết nối Netflix, YouTube'),
-(1, N'Máy lạnh', N'Máy lạnh 2 chiều Daikin'),
 (2, N'Bình nước nóng', N'Dung tích 20L'),
 (3, N'Minibar', N'Có sẵn nước ngọt và bia'),
-(3, N'Bồn tắm lớn', N'Có view hướng biển'),
 (4, N'Giường đôi', N'Dành cho 4 người'),
 (5, N'Loa Bluetooth', N'Hệ thống âm thanh cao cấp'),
 (6, N'Wifi miễn phí', N'Tốc độ cao');

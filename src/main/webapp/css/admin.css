@@ -202,4 +202,87 @@ table.table th {
     background-color: #dc3545;
 }*/
 
+.c-container {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-top: 25px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
 
+.c-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.c-header h2 {
+    color: #0d6efd;
+    font-weight: 700;
+    font-size: 1.6rem;
+}
+
+.c-table {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.c-table th, .c-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.c-table th {
+    background-color: #0d6efd;
+    color: white;
+    font-weight: 600;
+    text-align: left;
+}
+
+.c-table tr:hover {
+    background-color: #f1f5ff;
+}
+
+.c-btn {
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.c-btn-primary {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+.c-btn-primary:hover {
+    background-color: #0b5ed7;
+    transform: translateY(-2px);
+}
+
+.c-btn-danger {
+    background-color: #dc3545;
+    color: #fff;
+}
+.c-btn-danger:hover {
+    background-color: #b02a37;
+    transform: translateY(-2px);
+}
+
+.c-card {
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 20px;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+.c-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    transform: translateY(-3px);
+}
