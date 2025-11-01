@@ -67,4 +67,42 @@ public class DatPhongDAO {
         }
         return null;
     }
+    
+    
+    public int countAllBookings() {
+        String sql = "SELECT COUNT(*) AS cnt FROM DatPhong";
+        try (Connection conn = DBConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next()) return rs.getInt("cnt");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
+    
+    public int countCheckedIn() {
+        String sql = "SELECT COUNT(*) AS cnt FROM DatPhong WHERE TrangThai LIKE N'%nhận%' OR TrangThai LIKE N'%Nhận%'";
+        try (Connection conn = DBConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next()) return rs.getInt("cnt");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
+    public int countCancelled() {
+        String sql = "SELECT COUNT(*) AS cnt FROM DatPhong WHERE TrangThai LIKE N'%Hủy%' OR TrangThai LIKE N'%hủy%'";
+        try (Connection conn = DBConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next()) return rs.getInt("cnt");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }

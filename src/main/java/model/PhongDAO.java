@@ -97,4 +97,18 @@ public class PhongDAO {
         }
         return null;
     }
+    
+    public int countRooms() {
+        String sql = "SELECT COUNT(*) AS cnt FROM Phong";
+        try (Connection conn = DBConnection.getConnection();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("cnt");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }
