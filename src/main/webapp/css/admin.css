@@ -483,3 +483,67 @@ table.table th {
 /* active/logout keep high contrast */
 .sidebar .nav-link.active { background-color: #0d6efd !important; color: #fff !important; }
 .sidebar .nav-link.text-danger { color: #c82333 !important; }
+
+
+/* ---------- Dashboard stats cards (dành riêng cho trang dashboard) ---------- */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    align-items: stretch;
+}
+
+/* Một vài tinh chỉnh nhỏ cho cards cho đẹp như ảnh */
+.stats-row .card {
+    border-radius: 12px;
+    padding: 18px 14px;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #fff;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.stats-row .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 30px rgba(13,110,253,0.08);
+}
+
+/* icon box */
+.stats-row .card .icon {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 28px;
+}
+
+/* border color variants */
+.card-border-primary  { border: 1.5px solid #0d6efd; }
+.card-border-success  { border: 1.5px solid #198754; }
+.card-border-warning  { border: 1.5px solid #ffc107; }
+.card-border-danger   { border: 1.5px solid #dc3545; }
+
+/* icon background subtle */
+.card-border-primary  .icon { background: rgba(13,110,253,0.06); color: #0d6efd; }
+.card-border-success  .icon { background: rgba(25,135,84,0.06); color: #198754; }
+.card-border-warning  .icon { background: rgba(255,193,7,0.06); color: #ffc107; }
+.card-border-danger   .icon { background: rgba(220,53,69,0.06); color: #dc3545; }
+
+/* text */
+.stat-title { margin: 0; color: #555; font-weight: 600; font-size: 0.95rem; }
+.stat-number { margin: 0; font-size: 28px; font-weight: 800; color: #0b5ed7; }
+
+/* small responsive */
+@media (max-width: 992px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 576px) {
+    .stats-row { grid-template-columns: 1fr; gap: 14px; }
+    .stats-row .card { padding: 14px; min-height: 96px; }
+    .stats-row .card .icon { width: 56px; height: 56px; font-size: 24px; }
+    .stat-number { font-size: 22px; }
+}
