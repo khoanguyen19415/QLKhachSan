@@ -1,89 +1,180 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.*;
+import model.DatPhongDAO;
+import model.DatPhong;
+import model.PhongDAO;
 
 /**
- *
- * @author ADMIN
+ * Servlet quản lý đặt phòng: list, duyệt, từ chối, nhận, trả
  */
 @WebServlet(name = "QuanLyDatPhongServlet", urlPatterns = {"/QL-datphong"})
 public class QuanLyDatPhongServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    private DatPhongDAO dpDAO;
+    private PhongDAO phongDAO;
+
+    @Override
+    public void init() throws ServletException {
+        dpDAO = new DatPhongDAO();
+        phongDAO = new PhongDAO();
+    }
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        
-        request.getRequestDispatcher("/admin/quanlydatphong.jsp").forward(request, response);
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet QuanLyDatPhongServlet</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet QuanLyDatPhongServlet at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
+        String action = request.getParameter("action");
+        if (action == null) action = "list";
+
+        switch (action) {
+            case "list":
+                list(request, response);
+                break;
+            case "approve":
+                approve(request, response);
+                break;
+            case "reject":
+                reject(request, response);
+                break;
+            case "checkin":
+                checkin(request, response);
+                break;
+            case "checkout":
+                checkout(request, response);
+                break;
+            default:
+                list(request, response);
+                break;
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    // GET/POST forward to processRequest
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+            throws ServletException, IOException { processRequest(request, response); }
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        processRequest(request, response);
+            throws ServletException, IOException { processRequest(request, response); }
+
+    private void list(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        var ds = dpDAO.getAll();
+        request.setAttribute("dsDatPhong", ds);
+        request.getRequestDispatcher("/admin/quanlydatphong.jsp").forward(request, response);
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+    private void approve(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        try {
+            int id = Integer.parseInt(idStr);
+            DatPhong dp = dpDAO.getById(id);
+            if (dp == null) {
+                request.setAttribute("error", "Đơn không tồn tại");
+                list(request, response);
+                return;
+            }
 
+            boolean okDp = dpDAO.updateStatus(id, "Đã xác nhận");
+            boolean okPhong = phongDAO.updateStatus(dp.getMaPhong(), "Đã đặt");
+
+            if (okDp && okPhong) {
+                request.setAttribute("success", "Duyệt đơn thành công (cập nhật trạng thái phòng)");
+            } else if (okDp) {
+                request.setAttribute("success", "Duyệt đơn thành công (chưa cập nhật trạng thái phòng)");
+            } else {
+                request.setAttribute("error", "Duyệt đơn thất bại");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Dữ liệu không hợp lệ");
+        }
+        list(request, response);
+    }
+
+    private void reject(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        try {
+            int id = Integer.parseInt(idStr);
+            DatPhong dp = dpDAO.getById(id);
+            if (dp == null) {
+                request.setAttribute("error", "Đơn không tồn tại");
+                list(request, response);
+                return;
+            }
+
+            boolean okDp = dpDAO.updateStatus(id, "Đã hủy");
+            // khi huỷ, ta trả trạng thái phòng về "Còn trống" (tuỳ bạn muốn hay giữ nguyên)
+            boolean okPhong = phongDAO.updateStatus(dp.getMaPhong(), "Còn trống");
+
+            if (okDp) {
+                request.setAttribute("success", "Hủy đơn thành công");
+            } else {
+                request.setAttribute("error", "Hủy đơn thất bại");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Dữ liệu không hợp lệ");
+        }
+        list(request, response);
+    }
+
+    private void checkin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        try {
+            int id = Integer.parseInt(idStr);
+            DatPhong dp = dpDAO.getById(id);
+            if (dp == null) {
+                request.setAttribute("error", "Đơn không tồn tại");
+                list(request, response);
+                return;
+            }
+
+            boolean okDp = dpDAO.updateStatus(id, "Đã nhận");
+            boolean okPhong = phongDAO.updateStatus(dp.getMaPhong(), "Đang ở");
+
+            if (okDp && okPhong) {
+                request.setAttribute("success", "Khách đã nhận phòng");
+            } else if (okDp) {
+                request.setAttribute("success", "Cập nhật đơn thành công (phòng chưa cập nhật)");
+            } else {
+                request.setAttribute("error", "Không thể cập nhật trạng thái nhận phòng");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Dữ liệu không hợp lệ");
+        }
+        list(request, response);
+    }
+
+    private void checkout(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        try {
+            int id = Integer.parseInt(idStr);
+            DatPhong dp = dpDAO.getById(id);
+            if (dp == null) {
+                request.setAttribute("error", "Đơn không tồn tại");
+                list(request, response);
+                return;
+            }
+
+            boolean okDp = dpDAO.updateStatus(id, "Đã trả phòng");
+            boolean okPhong = phongDAO.updateStatus(dp.getMaPhong(), "Còn trống");
+
+            if (okDp && okPhong) {
+                request.setAttribute("success", "Khách đã trả phòng và phòng được chuyển về trạng thái Còn trống");
+            } else if (okDp) {
+                request.setAttribute("success", "Cập nhật đơn thành công (phòng chưa cập nhật)");
+            } else {
+                request.setAttribute("error", "Không thể cập nhật trạng thái trả phòng");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Dữ liệu không hợp lệ");
+        }
+        list(request, response);
+    }
 }

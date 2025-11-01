@@ -438,3 +438,48 @@ table.table th {
 .btn-danger {
     transition: all .12s ease;
 }
+.swal2-container {
+  z-index: 200000 !important;
+}
+.swal2-popup {
+  z-index: 200001 !important;
+}
+
+/* Sidebar links - improved hover contrast (replace existing .sidebar .nav-link rules) */
+.sidebar .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #2b2f36;                /* chữ tối, dễ đọc */
+    font-size: 1rem;
+    font-weight: 600;              /* hơi đậm để rõ khi hover */
+    padding: 12px 18px;
+    border-radius: 8px;
+    transition: transform 0.18s ease, background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+    margin-bottom: 6px;
+    background: transparent;
+    text-decoration: none;
+    opacity: 1;                     /* chắc chắn không mờ */
+}
+
+/* >>> FORCE sidebar hover (paste cuối file admin.css) */
+.sidebar .nav-link {
+  color: #2b2f36 !important;
+  font-weight: 600 !important;
+  background: transparent !important;
+  opacity: 1 !important;
+}
+
+.sidebar .nav-link i { color: inherit !important; }
+
+.sidebar .nav-link:hover {
+  background-color: #e6f2ff !important;
+  color: #0b61d6 !important;
+  transform: translateX(6px) !important;
+  box-shadow: 0 4px 12px rgba(11,97,214,0.08) !important;
+  opacity: 1 !important;
+}
+
+/* active/logout keep high contrast */
+.sidebar .nav-link.active { background-color: #0d6efd !important; color: #fff !important; }
+.sidebar .nav-link.text-danger { color: #c82333 !important; }

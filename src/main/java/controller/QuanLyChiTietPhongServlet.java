@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package controller;
 
 import java.io.File;
@@ -18,20 +14,15 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import model.ChiTietPhong;
 import model.ChiTietPhongDAO;
-import model.PhongAnhDAO;
 import model.PhongAnh;
+import model.PhongAnhDAO;
 
-/**
- *
- * @author ADMIN
- */
 @WebServlet(name = "QuanLyChiTietPhongServlet", urlPatterns = {"/QL-CTPhong"})
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024 * 2, // 2MB
         maxFileSize = 1024 * 1024 * 10, // 10MB
         maxRequestSize = 1024 * 1024 * 50 // 50MB
 )
-
 public class QuanLyChiTietPhongServlet extends HttpServlet {
 
     private ChiTietPhongDAO ctDAO;
@@ -43,111 +34,145 @@ public class QuanLyChiTietPhongServlet extends HttpServlet {
         anhDAO = new PhongAnhDAO();
     }
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
+        // Thiết lập charset
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+
         String action = request.getParameter("action");
-        if (action == null) {
-            action = "view";
-        }
+        if (action == null) action = "view";
 
         switch (action) {
             case "view":
                 xemChiTietPhong(request, response);
                 break;
+            case "add":
+                xuLyThemChiTiet(request, response);
+                break;
             case "update":
                 capNhatChiTietPhong(request, response);
                 break;
-            case "add":
-                themChiTietPhong(request, response);
             default:
+                // nếu không hợp lệ, quay về danh sách phòng chính
                 response.sendRedirect("QL-Phong");
                 break;
         }
-
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
+    // ---------------- Http method ----------------
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }
-
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
     }
-
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+        return "Servlet quản lý chi tiết phòng";
+    }
 
-    private void xemChiTietPhong(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        int maPhong = Integer.parseInt(request.getParameter("id"));
+    // ---------------- Các hành động ----------------
 
-        // Lấy danh sách tiện nghi của phòng
+    /**
+     * Hiển thị chi tiết phòng (tiện nghi + ảnh)
+     */
+    private void xemChiTietPhong(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String idParam = request.getParameter("id");
+        int maPhong = 0;
+        try {
+            maPhong = Integer.parseInt(idParam);
+        } catch (Exception e) {
+            // nếu id không hợp lệ, redirect về danh sách phòng
+            response.sendRedirect("QL-Phong");
+            return;
+        }
+
         List<ChiTietPhong> dsChiTiet = ctDAO.getByPhong(maPhong);
-
-        // Lấy danh sách ảnh của phòng
         List<PhongAnh> dsAnh = anhDAO.getAnhTheoPhong(maPhong);
 
-        // Gửi sang JSP
         request.setAttribute("dsChiTiet", dsChiTiet);
         request.setAttribute("dsAnh", dsAnh);
         request.setAttribute("maPhong", maPhong);
 
         request.getRequestDispatcher("/admin/quanlychitietphong.jsp").forward(request, response);
-
     }
 
-    private void capNhatChiTietPhong(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    /**
+     * Xử lý thêm tiện nghi (KHÔNG xử lý ảnh) — style giống QuanLyPhongServlet:
+     * - Nếu thành công set request attribute "success"
+     * - Nếu thất bại set request attribute "error"
+     * - Forward về "/QL-CTPhong?action=view&id=<maPhong>"
+     */
+    private void xuLyThemChiTiet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            String maPhongStr = request.getParameter("maPhong");
+            String tienNghi = request.getParameter("tienNghi");
+            String moTa = request.getParameter("moTa");
+
+            if (maPhongStr == null || maPhongStr.trim().isEmpty()) {
+                request.setAttribute("error", "Không xác định mã phòng.");
+                request.getRequestDispatcher("/QL-CTPhong?action=view&id=" + maPhongStr).forward(request, response);
+                return;
+            }
+
+            int maPhong = Integer.parseInt(maPhongStr);
+
+            // validate tối thiểu (bạn có thể mở rộng)
+            if (tienNghi == null || tienNghi.trim().isEmpty()) {
+                request.setAttribute("error", "Tiện nghi không được để trống.");
+                request.getRequestDispatcher("/QL-CTPhong?action=view&id=" + maPhong).forward(request, response);
+                return;
+            }
+
+            ChiTietPhong ct = new ChiTietPhong();
+            ct.setMaPhong(maPhong);
+            ct.setTienNghi(tienNghi);
+            ct.setMoTa(moTa);
+
+            int newId = ctDAO.insertChiTietPhong(ct); // trả về id mới hoặc -1
+            if (newId > 0) {
+                request.setAttribute("success", "Thêm chi tiết phòng thành công");
+            } else {
+                request.setAttribute("error", "Thêm chi tiết phòng thất bại");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            request.setAttribute("error", "Lỗi khi thêm: " + ex.getMessage());
+        }
+
+        // forward về trang xem để hiển thị thông báo (giống style của bạn)
+        String maPhongForw = request.getParameter("maPhong");
+        if (maPhongForw == null) maPhongForw = "0";
+        request.getRequestDispatcher("/QL-CTPhong?action=view&id=" + maPhongForw).forward(request, response);
+    }
+
+    private void capNhatChiTietPhong(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+
+        // giữ nguyên: dùng UTF-8 và trả JSON
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json;charset=UTF-8");
 
         try {
-            int maCTP = Integer.parseInt(request.getParameter("maCTP"));
-            int maPhong = Integer.parseInt(request.getParameter("maPhong"));
+            String maCTPStr = request.getParameter("maCTP");
+            String maPhongStr = request.getParameter("maPhong");
+            int maCTP = (maCTPStr != null && !maCTPStr.isEmpty()) ? Integer.parseInt(maCTPStr) : 0;
+            int maPhong = Integer.parseInt(maPhongStr);
+
             String tienNghi = request.getParameter("tienNghi");
             String moTa = request.getParameter("moTa");
 
-            // 1) Xử lý delete các ảnh được đánh dấu
-            String deletedAnhParam = request.getParameter("deletedAnh"); // "3,7,9" hoặc ""
+            // 1) Xử lý delete các ảnh được đánh dấu (hidden input deletedAnh = "3,7,9")
+            String deletedAnhParam = request.getParameter("deletedAnh");
             if (deletedAnhParam != null && !deletedAnhParam.trim().isEmpty()) {
                 String[] ids = deletedAnhParam.split(",");
                 for (String sId : ids) {
@@ -164,7 +189,6 @@ public class QuanLyChiTietPhongServlet extends HttpServlet {
                                     f.delete();
                                 }
                             } catch (Exception exFile) {
-                                // không quan trọng nếu xóa file thất bại, nhưng log
                                 exFile.printStackTrace();
                             }
                             // xóa bản ghi DB
@@ -187,17 +211,27 @@ public class QuanLyChiTietPhongServlet extends HttpServlet {
                 }
                 String fileName = System.currentTimeMillis() + "_" + Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
                 filePart.write(savePath + fileName);
-                // lưu đường dẫn (đúng format bạn đang dùng: "img/filename")
+                // lưu đường dẫn (định dạng giống project của bạn): "img/filename"
                 anhDAO.themAnhChoPhong(maPhong, "img/" + fileName);
             }
 
-            // 3) Cập nhật tiện nghi + mô tả (bắt buộc set MaCTP)
-            ChiTietPhong ctp = new ChiTietPhong();
-            ctp.setMaCTP(maCTP);
-            ctp.setMaPhong(maPhong);
-            ctp.setTienNghi(tienNghi);
-            ctp.setMoTa(moTa);
-            ctDAO.updateChiTietPhong(ctp);
+            // 3) Cập nhật tiện nghi + mô tả (cần MaCTP để update)
+            if (maCTP > 0) {
+                ChiTietPhong ctp = new ChiTietPhong();
+                ctp.setMaCTP(maCTP);
+                ctp.setMaPhong(maPhong);
+                ctp.setTienNghi(tienNghi);
+                ctp.setMoTa(moTa);
+                ctDAO.updateChiTietPhong(ctp);
+            } else {
+                // Nếu không có maCTP (trường hợp người dùng mở modal "Thêm" nhưng gửi action=update),
+                // fallback: thêm mới
+                ChiTietPhong ctp = new ChiTietPhong();
+                ctp.setMaPhong(maPhong);
+                ctp.setTienNghi(tienNghi);
+                ctp.setMoTa(moTa);
+                ctDAO.insertChiTietPhong(ctp);
+            }
 
             response.getWriter().write("{\"status\":\"success\"}");
         } catch (Exception ex) {
@@ -205,25 +239,4 @@ public class QuanLyChiTietPhongServlet extends HttpServlet {
             response.getWriter().write("{\"status\":\"error\"}");
         }
     }
-
-    private void themChiTietPhong(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        int maPhong = Integer.parseInt(request.getParameter("maPhong"));
-        String tienNghi = request.getParameter("tienNghi");
-        String moTa = request.getParameter("moTa");
-
-        ChiTietPhong newCtp = new ChiTietPhong();
-        newCtp.setMaPhong(maPhong);
-        newCtp.setTienNghi(tienNghi);
-        newCtp.setMoTa(moTa);
-        int newId = ctDAO.insertChiTietPhong(newCtp);
-
-        // nếu upload ảnh (Part "anh") xử lý lưu file và anhDAO.themAnhChoPhong(maPhong, "img/..")
-        // trả JSON:
-        if (newId > 0) {
-            response.getWriter().write("{\"status\":\"success\"}");
-        } else {
-            response.getWriter().write("{\"status\":\"error\"}");
-        }
-    }
-
 }

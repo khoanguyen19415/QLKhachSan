@@ -59,4 +59,42 @@ public class PhongDAO {
             e.printStackTrace();
         }
     }
+
+    // ===== MỚI: cập nhật trạng thái phòng =====
+    public boolean updateStatus(int maPhong, String trangThai) {
+        String sql = "UPDATE Phong SET TrangThai = ? WHERE MaPhong = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, trangThai);
+            ps.setInt(2, maPhong);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // Tuỳ: lấy 1 phòng theo id (nếu cần)
+    public Phong getById(int maPhong) {
+        String sql = "SELECT MaPhong, TenPhong, LoaiPhong, Gia, MoTa, TrangThai FROM Phong WHERE MaPhong = ?";
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, maPhong);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new Phong(
+                        rs.getInt("MaPhong"),
+                        rs.getString("TenPhong"),
+                        rs.getString("LoaiPhong"),
+                        rs.getDouble("Gia"),
+                        rs.getString("MoTa"),
+                        rs.getString("TrangThai")
+                    );
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
