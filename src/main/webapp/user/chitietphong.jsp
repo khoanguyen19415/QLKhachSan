@@ -24,7 +24,6 @@
                         <div class="card">
                             <div class="card-body">
                                 <h3 class="card-title">${phong.tenPhong}</h3>
-                                <p class="mb-1">Mã phòng: <strong>${phong.maPhong}</strong></p>
                                 <p class="mb-1">Loại phòng: <strong>${phong.loaiPhong}</strong></p>
                                 <p class="mb-1">Giá / đêm: <strong><fmt:formatNumber value="${phong.gia}" type="number" /></strong></p>
 

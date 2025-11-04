@@ -43,19 +43,19 @@
                             </c:choose>
                             <div class="card-body text-center">
                                 <h5 class="card-title text-primary">${phong.tenPhong}</h5>
-                                <p class="card-text fw-semibold">Giá: <fmt:formatNumber value="${phong.gia}" type="currency" currencySymbol="đ" /></p>
+                                <p><fmt:formatNumber value="${phong.gia}" type="number" groupingUsed="true"/> đ / đêm</p>                                                               
                                 <p>${phong.moTa}</p>
                                 <p>
                                     Trạng thái:
                                     <!-- Trạng thái -->
-                                <c:choose>
-                                    <c:when test="${isAvailable}">
-                                        <span class="badge badge-status bg-success">Còn trống</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <span class="badge badge-status bg-danger">${phong.trangThai}</span>
-                                    </c:otherwise>
-                                </c:choose>
+                                    <c:choose>
+                                        <c:when test="${isAvailable}">
+                                            <span class="badge badge-status bg-success">Còn trống</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="badge badge-status bg-danger">${phong.trangThai}</span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </p>
                             </div>
                         </div>
