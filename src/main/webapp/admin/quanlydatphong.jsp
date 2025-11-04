@@ -25,20 +25,19 @@
                     </h3>
                     <hr>
 
-                    <!-- Bộ lọc / tìm kiếm -->
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="d-flex gap-2">
-                            <select class="form-select">
-                                <option>Tất cả trạng thái</option>
-                                <option>Chờ duyệt</option>
-                                <option>Đã xác nhận</option>
-                                <option>Đã hủy</option>
-                                <option>Đang ở</option>
-                            </select>
+                    <!-- Thanh tìm kiếm -->
+                    <form class="d-flex justify-content-end mb-3" 
+                          action="${pageContext.request.contextPath}/QL-datphong" method="get">
+                        <input type="hidden" name="action" value="search"/>
+                        <div class="d-flex" style="min-width:350px;">
+                            <input type="text" name="keyword" class="form-control me-2" 
+                                   placeholder="Tìm mã đơn, mã khách, mã phòng hoặc trạng thái..." 
+                                   value="${param.keyword}">
+                            <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
                         </div>
-                        <input type="text" class="form-control w-25" placeholder="Tìm mã đơn hoặc khách hàng...">
-                    </div>
+                    </form>
 
+                    <!-- Bảng dữ liệu -->
                     <table class="table table-hover table-bordered align-middle">
                         <thead class="table-primary text-center">
                             <tr>
@@ -64,13 +63,13 @@
                                             <c:when test="${fn:contains(dp.trangThai, 'Chờ')}">
                                                 <span class="badge bg-warning text-dark"><c:out value="${dp.trangThai}" /></span>
                                             </c:when>
-                                            <c:when test="${fn:contains(dp.trangThai, 'hủy') || fn:contains(dp.trangThai, 'Hủy') || dp.trangThai == 'Đã hủy'}">
+                                            <c:when test="${fn:contains(dp.trangThai, 'hủy') || fn:contains(dp.trangThai, 'Hủy')}">
                                                 <span class="badge bg-danger"><c:out value="${dp.trangThai}" /></span>
                                             </c:when>
-                                            <c:when test="${fn:contains(dp.trangThai, 'xác nhận') || fn:contains(dp.trangThai, 'Đã xác nhận')}">
+                                            <c:when test="${fn:contains(dp.trangThai, 'xác nhận')}">
                                                 <span class="badge bg-success"><c:out value="${dp.trangThai}" /></span>
                                             </c:when>
-                                            <c:when test="${fn:contains(dp.trangThai, 'nhận') || fn:contains(dp.trangThai, 'Đã nhận')}">
+                                            <c:when test="${fn:contains(dp.trangThai, 'nhận')}">
                                                 <span class="badge bg-primary"><c:out value="${dp.trangThai}" /></span>
                                             </c:when>
                                             <c:otherwise>
@@ -80,53 +79,51 @@
                                     </td>
 
                                     <td class="text-center">
-                                        <%-- chuẩn hóa giá trị trạng thái xuống chữ thường và bỏ khoảng trắng --%>
                                         <c:set var="st" value="${fn:trim(fn:toLowerCase(dp.trangThai))}" />
-                                        <%-- Buttons: chỉ xuất đúng các nút ứng với trạng thái --%>
-                                        <div class="action-group" style="justify-content:center;">
+                                        <div class="d-flex justify-content-center gap-2">
                                             <c:choose>
                                                 <c:when test="${st == 'chờ duyệt' || st == 'chờ xác nhận'}">
-                                                    <form action="${pageContext.request.contextPath}/QL-datphong" method="post" class="action-item" style="display:inline-block; margin-right:6px;">
+                                                    <form action="${pageContext.request.contextPath}/QL-datphong" method="post" style="display:inline-block;">
                                                         <input type="hidden" name="action" value="approve" />
                                                         <input type="hidden" name="id" value="${dp.maDatPhong}" />
                                                         <button class="btn btn-sm btn-success" type="submit" onclick="return confirm('Duyệt đơn này?')">
-                                                            <i class="bi bi-check-circle"></i> Duyệt
+                                                            <i class="bi bi-check-circle"></i>
                                                         </button>
                                                     </form>
 
-                                                    <form action="${pageContext.request.contextPath}/QL-datphong" method="post" class="action-item" style="display:inline-block;">
+                                                    <form action="${pageContext.request.contextPath}/QL-datphong" method="post" style="display:inline-block;">
                                                         <input type="hidden" name="action" value="reject" />
                                                         <input type="hidden" name="id" value="${dp.maDatPhong}" />
                                                         <button class="btn btn-sm btn-danger" type="submit" onclick="return confirm('Từ chối đơn này?')">
-                                                            <i class="bi bi-x-circle"></i> Từ chối
+                                                            <i class="bi bi-x-circle"></i>
                                                         </button>
                                                     </form>
                                                 </c:when>
 
                                                 <c:when test="${st == 'đã xác nhận' || st == 'xác nhận'}">
-                                                    <form action="${pageContext.request.contextPath}/QL-datphong" method="post" class="action-item">
+                                                    <form action="${pageContext.request.contextPath}/QL-datphong" method="post">
                                                         <input type="hidden" name="action" value="checkin" />
                                                         <input type="hidden" name="id" value="${dp.maDatPhong}" />
                                                         <button class="btn btn-sm btn-primary" type="submit" onclick="return confirm('Xác nhận khách nhận phòng?')">
-                                                            <i class="bi bi-door-open"></i> Nhận phòng
+                                                            <i class="bi bi-door-open"></i>
                                                         </button>
                                                     </form>
                                                 </c:when>
 
                                                 <c:when test="${st == 'đã nhận' || st == 'nhận'}">
-                                                    <form action="${pageContext.request.contextPath}/QL-datphong" method="post" class="action-item">
+                                                    <form action="${pageContext.request.contextPath}/QL-datphong" method="post">
                                                         <input type="hidden" name="action" value="checkout" />
                                                         <input type="hidden" name="id" value="${dp.maDatPhong}" />
                                                         <button class="btn btn-sm btn-secondary" type="submit" onclick="return confirm('Xác nhận trả phòng?')">
-                                                            <i class="bi bi-arrow-clockwise"></i> Trả phòng
+                                                            <i class="bi bi-arrow-clockwise"></i>
                                                         </button>
                                                     </form>
                                                 </c:when>
 
                                                 <c:otherwise>
                                                     <button class="btn btn-sm btn-secondary" disabled><i class="bi bi-lock"></i></button>
-                                                    </c:otherwise>
-                                                </c:choose>
+                                                </c:otherwise>
+                                            </c:choose>
                                         </div>
                                     </td>
                                 </tr>
@@ -138,5 +135,7 @@
         </div>
 
         <%@ include file="layout/footer.jsp" %>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     </body>
 </html>

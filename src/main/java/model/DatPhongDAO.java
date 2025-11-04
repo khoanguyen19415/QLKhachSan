@@ -105,4 +105,57 @@ public class DatPhongDAO {
         }
         return 0;
     }
+    
+    public List<DatPhong> search(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAll();
+        }
+        List<DatPhong> list = new ArrayList<>();
+        String k = keyword.trim();
+        // thử parse thành số
+        try (Connection conn = DBConnection.getConnection()) {
+            try {
+                int id = Integer.parseInt(k);
+                String sql = "SELECT MaDatPhong, MaKH, MaPhong, NgayDat, NgayNhan, NgayTra, TrangThai FROM DatPhong WHERE MaDatPhong = ? OR MaKH = ? OR MaPhong = ? ORDER BY MaDatPhong DESC ";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, id);
+                    ps.setInt(2, id);
+                    ps.setInt(3, id);
+                    ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        DatPhong dp = new DatPhong(
+                            rs.getInt("MaDatPhong"),
+                            rs.getInt("MaKH"),
+                            rs.getInt("MaPhong"),
+                            rs.getDate("NgayDat"),
+                            rs.getDate("NgayNhan"),
+                            rs.getDate("NgayTra"),
+                            rs.getString("TrangThai")
+                        );
+                        list.add(dp);
+                    }
+                }
+            } catch (NumberFormatException ex) {
+                // nếu không phải số, tìm theo chuỗi trong trạng thái (ví dụ)
+                String sql = "SELECT MaDatPhong, MaKH, MaPhong, NgayDat, NgayNhan, NgayTra, TrangThai FROM DatPhong WHERE TrangThai LIKE ? ORDER BY MaDatPhong DESC";
+                try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setString(1, "%" + k + "%");
+                    ResultSet rs = ps.executeQuery();
+                    while (rs.next()) {
+                        DatPhong dp = new DatPhong(
+                            rs.getInt("MaDatPhong"),
+                            rs.getInt("MaKH"),
+                            rs.getInt("MaPhong"),
+                            rs.getDate("NgayDat"),
+                            rs.getDate("NgayNhan"),
+                            rs.getDate("NgayTra"),
+                            rs.getString("TrangThai")
+                        );
+                        list.add(dp);
+                    }
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
+    }
 }

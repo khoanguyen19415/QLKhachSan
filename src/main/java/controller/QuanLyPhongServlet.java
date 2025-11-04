@@ -6,6 +6,7 @@ package controller;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -40,8 +41,8 @@ public class QuanLyPhongServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
-    response.setCharacterEncoding("UTF-8");
-    response.setContentType("text/html;charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
         String action = request.getParameter("action");
         if (action == null) {
             action = "list";
@@ -56,11 +57,17 @@ public class QuanLyPhongServlet extends HttpServlet {
             case "add":
                 XuLyThem(request, response);
                 break;
+            case "update":
+                XuLyCapNhat(request, response);
+                break;
             case "delete":
                 int id = Integer.parseInt(request.getParameter("id"));
                 phongDAO.delete(id);
                 request.setAttribute("success", "Xóa Phòng thành công");
                 request.getRequestDispatcher("/QL-Phong?action=list").forward(request, response);
+                break;
+            case "search":
+                XuLyTimKiem(request, response);
                 break;
         }
     }
@@ -107,10 +114,10 @@ public class QuanLyPhongServlet extends HttpServlet {
     private void XuLyThem(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             String tenPhong = request.getParameter("tenPhong");
-        String loaiPhong = request.getParameter("loaiPhong");
-        double gia = Double.parseDouble(request.getParameter("gia"));
-        String moTa = request.getParameter("moTa"); 
-        String trangThai = request.getParameter("trangThai");
+            String loaiPhong = request.getParameter("loaiPhong");
+            double gia = Double.parseDouble(request.getParameter("gia"));
+            String moTa = request.getParameter("moTa");
+            String trangThai = request.getParameter("trangThai");
 
             Phong p = new Phong(0, tenPhong, loaiPhong, gia, moTa, trangThai);
             phongDAO.insert(p);
@@ -122,4 +129,41 @@ public class QuanLyPhongServlet extends HttpServlet {
         request.getRequestDispatcher("/QL-Phong?action=list").forward(request, response);
     }
 
+    private void XuLyCapNhat(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            int maPhong = Integer.parseInt(request.getParameter("maPhong"));
+            String tenPhong = request.getParameter("tenPhong");
+            String loaiPhong = request.getParameter("loaiPhong");
+            double gia = 0;
+            try {
+                gia = Double.parseDouble(request.getParameter("gia"));
+            } catch (Exception ex) {
+                gia = 0;
+            }
+            String moTa = request.getParameter("moTa");
+            String trangThai = request.getParameter("trangThai");
+
+            Phong p = new Phong(maPhong, tenPhong, loaiPhong, gia, moTa, trangThai);
+            boolean ok = phongDAO.update(p); // cần method update trong PhongDAO
+
+            if (ok) {
+                request.setAttribute("success", "Cập nhật phòng thành công");
+            } else {
+                request.setAttribute("error", "Cập nhật phòng thất bại");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Lỗi khi cập nhật phòng");
+        }
+        request.getRequestDispatcher("/QL-Phong?action=list").forward(request, response);
+    }
+
+    private void XuLyTimKiem(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String keyword = request.getParameter("keyword");
+        if (keyword == null) keyword = "";
+        List<Phong> dsPhong = phongDAO.search(keyword);
+        request.setAttribute("dsPhong", dsPhong);
+        request.setAttribute("keyword", keyword);
+        request.getRequestDispatcher("/admin/quanlyphong.jsp").forward(request, response);
+    }
 }

@@ -73,6 +73,9 @@ public class QuanLyKhServlet extends HttpServlet {
                     request.setAttribute("success", "Xóa khách hàng thành công");
                     request.getRequestDispatcher("/QL-Khachhang?action=list").forward(request, response);
                     break;
+                    case "update": // mới: xử lý AJAX cập nhật khách hàng
+                XuLySua(request, response);
+                break;
             }
         }
 
@@ -139,6 +142,34 @@ public class QuanLyKhServlet extends HttpServlet {
                 request.getRequestDispatcher("/QL-Khachhang?action=list").forward(request, response);
             } catch (Exception ex1) {
             }
+        }
+    }
+
+    private void XuLySua(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        try (PrintWriter out = response.getWriter()) {
+            String idStr = request.getParameter("maKH");
+            if (idStr == null || idStr.trim().isEmpty()) {
+                out.print("{\"status\":\"error\",\"message\":\"Thiếu mã khách hàng\"}");
+                return;
+            }
+            int maKH = Integer.parseInt(idStr);
+            String hoTen = request.getParameter("hoTen");
+            String soDienThoai = request.getParameter("soDienThoai");
+            String email = request.getParameter("email");
+            String diaChi = request.getParameter("diaChi");
+
+            KhachHang kh = new KhachHang(maKH, hoTen, soDienThoai, email, diaChi);
+
+            boolean ok = khDAO.updateKhachHang(kh);
+            if (ok) {
+                out.print("{\"status\":\"success\",\"message\":\"Cập nhật khách hàng thành công\"}");
+            } else {
+                out.print("{\"status\":\"error\",\"message\":\"Cập nhật thất bại\"}");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.getWriter().print("{\"status\":\"error\",\"message\":\"Lỗi khi cập nhật khách hàng\"}");
         }
     }
 

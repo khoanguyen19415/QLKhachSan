@@ -47,6 +47,23 @@ public class PhongDAO {
             e.printStackTrace();
         }
     }
+    
+    public boolean update(Phong p) {
+    String sql = "UPDATE Phong SET TenPhong = ?, LoaiPhong = ?, Gia = ?, MoTa = ?, TrangThai = ? WHERE MaPhong = ?";
+    try (Connection con = DBConnection.getConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, p.getTenPhong());
+        ps.setString(2, p.getLoaiPhong());
+        ps.setDouble(3, p.getGia());
+        ps.setString(4, p.getMoTa());
+        ps.setString(5, p.getTrangThai());
+        ps.setInt(6, p.getMaPhong());
+        return ps.executeUpdate() > 0;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;
+    }
+}
 
     // ✅ Hàm xóa phòng theo mã
     public void delete(int maPhong) {
@@ -58,6 +75,32 @@ public class PhongDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    public List<Phong> search(String keyword) {
+        List<Phong> list = new ArrayList<>();
+        String sql = "SELECT MaPhong, TenPhong, LoaiPhong, Gia, MoTa, TrangThai FROM Phong WHERE TenPhong LIKE ? OR LoaiPhong LIKE ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            String k = "%" + (keyword == null ? "" : keyword.trim()) + "%";
+            ps.setString(1, k);
+            ps.setString(2, k);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Phong p = new Phong(
+                        rs.getInt("MaPhong"),
+                        rs.getString("TenPhong"),
+                        rs.getString("LoaiPhong"),
+                        rs.getDouble("Gia"),
+                        rs.getString("MoTa"),
+                        rs.getString("TrangThai")
+                );
+                list.add(p);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     // ===== MỚI: cập nhật trạng thái phòng =====

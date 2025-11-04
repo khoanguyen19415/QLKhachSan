@@ -1,6 +1,7 @@
 package controller;
 
 import java.io.IOException;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -29,7 +30,9 @@ public class QuanLyDatPhongServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("action");
-        if (action == null) action = "list";
+        if (action == null) {
+            action = "list";
+        }
 
         switch (action) {
             case "list":
@@ -47,6 +50,9 @@ public class QuanLyDatPhongServlet extends HttpServlet {
             case "checkout":
                 checkout(request, response);
                 break;
+            case "search":
+                search(request, response);
+                break;
             default:
                 list(request, response);
                 break;
@@ -56,10 +62,15 @@ public class QuanLyDatPhongServlet extends HttpServlet {
     // GET/POST forward to processRequest
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException { processRequest(request, response); }
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException { processRequest(request, response); }
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
 
     private void list(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         var ds = dpDAO.getAll();
@@ -176,5 +187,13 @@ public class QuanLyDatPhongServlet extends HttpServlet {
             request.setAttribute("error", "Dữ liệu không hợp lệ");
         }
         list(request, response);
+    }
+
+    private void search(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+         String keyword = request.getParameter("keyword");
+        List<DatPhong> ds = dpDAO.search(keyword);
+        request.setAttribute("dsDatPhong", ds);
+        request.setAttribute("keyword", keyword);
+        request.getRequestDispatcher("/admin/quanlydatphong.jsp").forward(request, response);
     }
 }
