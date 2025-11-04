@@ -117,9 +117,8 @@ public class QuanLyDatPhongServlet extends HttpServlet {
                 return;
             }
 
-            boolean okDp = dpDAO.updateStatus(id, "Đã hủy");
-            // khi huỷ, ta trả trạng thái phòng về "Còn trống" (tuỳ bạn muốn hay giữ nguyên)
-            boolean okPhong = phongDAO.updateStatus(dp.getMaPhong(), "Còn trống");
+            boolean okDp = dpDAO.updateStatus(id, "hủy");
+            boolean okPhong = phongDAO.updateStatus(dp.getMaPhong(), "trống");
 
             if (okDp) {
                 request.setAttribute("success", "Hủy đơn thành công");
@@ -173,7 +172,7 @@ public class QuanLyDatPhongServlet extends HttpServlet {
             }
 
             boolean okDp = dpDAO.updateStatus(id, "Đã trả phòng");
-            boolean okPhong = phongDAO.updateStatus(dp.getMaPhong(), "Còn trống");
+            boolean okPhong = phongDAO.updateStatus(dp.getMaPhong(), "trống");
 
             if (okDp && okPhong) {
                 request.setAttribute("success", "Khách đã trả phòng và phòng được chuyển về trạng thái Còn trống");

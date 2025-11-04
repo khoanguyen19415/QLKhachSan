@@ -111,8 +111,8 @@ VALUES
 (N'Phòng Standard 102', N'Standard', 500000, N'Phòng tiêu chuẩn, đầy đủ tiện nghi cơ bản', N'Trống'),
 (N'Phòng Suite 201', N'Suite', 1200000, N'Phòng cao cấp có phòng khách riêng', N'Đã đặt'),
 (N'Phòng Family 202', N'Family', 950000, N'Phòng cho gia đình 4 người', N'Trống'),
-(N'Phòng VIP 301', N'VIP', 1800000, N'Phòng cao cấp có bồn tắm và minibar', N'Trống'),
-(N'Phòng Budget 302', N'Budget', 350000, N'Phòng nhỏ gọn giá rẻ cho 1 người', N'Đã đặt');
+(N'Phòng VIP 301', N'VIP', 1800000, N'Phòng cao cấp có bồn tắm và minibar', N'Đã đặt'),
+(N'Phòng Budget 302', N'Budget', 350000, N'Phòng nhỏ gọn giá rẻ cho 1 người', N'Trống');
 GO
 
 -- ====================================

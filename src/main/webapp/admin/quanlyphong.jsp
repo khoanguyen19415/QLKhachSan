@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -55,10 +56,10 @@
                                     <td>${p.maPhong}</td>
                                     <td>${p.tenPhong}</td>
                                     <td>${p.loaiPhong}</td>
-                                    <td>${p.gia}</td>
+                                    <td ><fmt:formatNumber value="${p.gia}" type="number" groupingUsed="true"/> đ / đêm</td>
                                     <td>${p.moTa}</td>
                                     <td>
-                                        <span class="${p.trangThai eq 'Còn trống' ? 'status-available' : 'status-unavailable'}"></span>
+                                        <span class="${p.trangThai eq 'trống' ? 'status-available' : 'status-unavailable'}"></span>
                                         ${p.trangThai}
                                     </td>
                                     <td>
@@ -124,9 +125,8 @@
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Trạng thái</label>
                                     <select name="trangThai" class="form-select">
-                                        <option value="Còn trống">Còn trống</option>
+                                        <option value="trống">Trống</option>
                                         <option value="Đã đặt">Đã đặt</option>
-                                        <option value="Bảo trì">Bảo trì</option>
                                     </select>
                                 </div>
                                 <div class="col-12">
@@ -188,7 +188,7 @@
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold">Trạng thái</label>
                                     <select name="trangThai" id="editTrangThai" class="form-select">
-                                        <option value="Còn trống">Còn trống</option>
+                                        <option value="trống">trống</option>
                                         <option value="Đã đặt">Đã đặt</option>
                                         <option value="Bảo trì">Bảo trì</option>
                                     </select>

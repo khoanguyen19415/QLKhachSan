@@ -67,45 +67,43 @@ public class DatPhongDAO {
         }
         return null;
     }
-    
-    
+
     public int countAllBookings() {
         String sql = "SELECT COUNT(*) AS cnt FROM DatPhong";
-        try (Connection conn = DBConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            if (rs.next()) return rs.getInt("cnt");
+        try (Connection conn = DBConnection.getConnection(); Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("cnt");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return 0;
     }
-    
-    
+
     public int countCheckedIn() {
         String sql = "SELECT COUNT(*) AS cnt FROM DatPhong WHERE TrangThai LIKE N'%nhận%' OR TrangThai LIKE N'%Nhận%'";
-        try (Connection conn = DBConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            if (rs.next()) return rs.getInt("cnt");
+        try (Connection conn = DBConnection.getConnection(); Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("cnt");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return 0;
     }
-    
+
     public int countCancelled() {
         String sql = "SELECT COUNT(*) AS cnt FROM DatPhong WHERE TrangThai LIKE N'%Hủy%' OR TrangThai LIKE N'%hủy%'";
-        try (Connection conn = DBConnection.getConnection();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            if (rs.next()) return rs.getInt("cnt");
+        try (Connection conn = DBConnection.getConnection(); Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("cnt");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return 0;
     }
-    
+
     public List<DatPhong> search(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return getAll();
@@ -124,13 +122,13 @@ public class DatPhongDAO {
                     ResultSet rs = ps.executeQuery();
                     while (rs.next()) {
                         DatPhong dp = new DatPhong(
-                            rs.getInt("MaDatPhong"),
-                            rs.getInt("MaKH"),
-                            rs.getInt("MaPhong"),
-                            rs.getDate("NgayDat"),
-                            rs.getDate("NgayNhan"),
-                            rs.getDate("NgayTra"),
-                            rs.getString("TrangThai")
+                                rs.getInt("MaDatPhong"),
+                                rs.getInt("MaKH"),
+                                rs.getInt("MaPhong"),
+                                rs.getDate("NgayDat"),
+                                rs.getDate("NgayNhan"),
+                                rs.getDate("NgayTra"),
+                                rs.getString("TrangThai")
                         );
                         list.add(dp);
                     }
@@ -143,19 +141,60 @@ public class DatPhongDAO {
                     ResultSet rs = ps.executeQuery();
                     while (rs.next()) {
                         DatPhong dp = new DatPhong(
-                            rs.getInt("MaDatPhong"),
-                            rs.getInt("MaKH"),
-                            rs.getInt("MaPhong"),
-                            rs.getDate("NgayDat"),
-                            rs.getDate("NgayNhan"),
-                            rs.getDate("NgayTra"),
-                            rs.getString("TrangThai")
+                                rs.getInt("MaDatPhong"),
+                                rs.getInt("MaKH"),
+                                rs.getInt("MaPhong"),
+                                rs.getDate("NgayDat"),
+                                rs.getDate("NgayNhan"),
+                                rs.getDate("NgayTra"),
+                                rs.getString("TrangThai")
                         );
                         list.add(dp);
                     }
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
+    }
+
+   public boolean insert(DatPhong dp) {
+        String sql = "INSERT INTO DatPhong (MaKH, MaPhong, NgayDat, NgayNhan, NgayTra, TrangThai) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setInt(1, dp.getMaKH());
+            ps.setInt(2, dp.getMaPhong());
+
+            // null-safe convert
+            java.util.Date udNgayDat = dp.getNgayDat();
+            java.util.Date udNgayNhan = dp.getNgayNhan();
+            java.util.Date udNgayTra = dp.getNgayTra();
+
+            java.sql.Date sqlNgayDat = (udNgayDat == null) ? null : new java.sql.Date(udNgayDat.getTime());
+            java.sql.Date sqlNgayNhan = (udNgayNhan == null) ? null : new java.sql.Date(udNgayNhan.getTime());
+            java.sql.Date sqlNgayTra = (udNgayTra == null) ? null : new java.sql.Date(udNgayTra.getTime());
+
+            ps.setDate(3, sqlNgayDat);
+            ps.setDate(4, sqlNgayNhan);
+            ps.setDate(5, sqlNgayTra);
+
+            ps.setString(6, dp.getTrangThai() == null ? "Chờ xác nhận" : dp.getTrangThai());
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        dp.setMaDatPhong(rs.getInt(1));
+                    }
+                } catch (Exception ignore) {}
+                return true;
+            }
+            return false;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
     }
 }

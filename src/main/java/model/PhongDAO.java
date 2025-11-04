@@ -154,4 +154,17 @@ public class PhongDAO {
         }
         return 0;
     }
+    
+    
+    public String normalizeStatus(String raw) {
+        if (raw == null) return "Đã đặt";
+        String s = raw.trim().toLowerCase();
+        if (s.contains("trống")) return "Trống";
+        // nếu có từ "hủy" hay "đã trả" v.v. => phòng hiện không đang bị đặt (ở đây mình coi là Trống)
+        if (s.contains("hủy") || s.contains("trả")) return "Trống";
+        // nếu có "đặt" hoặc "đang" hoặc "nhận" => coi là đã đặt/không trống
+        if (s.contains("đặt") || s.contains("đang") || s.contains("nhận")) return "Đã đặt";
+        // mặc định nếu ko rõ, giữ "Đã đặt" an toàn (không cho đặt trùng)
+        return "Đã đặt";
+    }
 }

@@ -6,14 +6,14 @@ package controller;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import model.ChiTietPhong;
+import model.ChiTietPhongDAO;
 import model.Phong;
 import model.PhongAnh;
 import model.PhongAnhDAO;
@@ -23,17 +23,20 @@ import model.PhongDAO;
  *
  * @author linhdhdi4
  */
-@WebServlet(name = "PhongServlet", urlPatterns = {"/phong"})
-public class PhongServlet extends HttpServlet {
+@WebServlet(name = "ChiTietPhongServlet", urlPatterns = {"/chi-tiet-phong"})
+public class ChiTietPhongServlet extends HttpServlet {
 
     private PhongDAO phongDAO;
     private PhongAnhDAO phongAnhDAO;
-    
+    private ChiTietPhongDAO chiTietDAO;
+
     @Override
     public void init() throws ServletException {
         phongDAO = new PhongDAO();
         phongAnhDAO = new PhongAnhDAO();
+        chiTietDAO = new ChiTietPhongDAO();
     }
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -46,41 +49,53 @@ public class PhongServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        
-          // Lấy tất cả phòng
-        List<Phong> dsPhong = phongDAO.getAllPhong();
+        String maPhongStr = request.getParameter("maPhong");
+        if (maPhongStr == null || maPhongStr.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/phong");
+            return;
+        }
 
-        // Chuẩn bị map: MaPhong -> firstImagePath (đã thêm context path nếu cần)
-        Map<Integer, String> firstImages = new HashMap<>();
-        if (dsPhong != null) {
-            for (Phong p : dsPhong) {
-                try {
-                    int id = p.getMaPhong();
-                    List<PhongAnh> imgs = phongAnhDAO.getAnhTheoPhong(id);
-                    if (imgs != null && !imgs.isEmpty()) {
-                        String src = imgs.get(0).getDuongDanAnh();
-                        if (src != null) {
-                            src = src.trim();
-                            // nếu đường dẫn không bắt đầu bằng / hoặc http thì thêm context path để hợp lệ
-                            if (!src.startsWith("/") && !src.startsWith("http")) {
-                                src = request.getContextPath() + "/" + src;
-                            }
-                        }
-                        firstImages.put(id, src);
-                    } else {
-                        firstImages.put(id, null);
+        int maPhong;
+        try {
+            maPhong = Integer.parseInt(maPhongStr);
+        } catch (NumberFormatException ex) {
+            response.sendRedirect(request.getContextPath() + "/phong");
+            return;
+        }
+
+        Phong p = phongDAO.getById(maPhong);
+        if (p == null) {
+            request.setAttribute("error", "Phòng không tồn tại");
+            request.getRequestDispatcher("/phong").forward(request, response);
+            return;
+        }
+
+        // Ảnh và tiện nghi
+        List<PhongAnh> dsAnh = phongAnhDAO.getAnhTheoPhong(maPhong);
+        List<ChiTietPhong> dsCT = chiTietDAO.getByPhong(maPhong);
+
+        // Normalize image paths: nếu đường dẫn không bắt đầu bằng '/' hoặc 'http' thì thêm contextPath
+        if (dsAnh != null) {
+            for (PhongAnh a : dsAnh) {
+                String src = a.getDuongDanAnh();
+                if (src != null) {
+                    src = src.trim();
+                    if (!src.startsWith("/") && !src.startsWith("http")) {
+                        src = request.getContextPath() + "/" + src;
                     }
-                } catch (Exception ex) {
-                    firstImages.put(p.getMaPhong(), null);
+                    a.setDuongDanAnh(src);
                 }
             }
         }
 
-        request.setAttribute("dsPhong", dsPhong);
-        request.setAttribute("firstImages", firstImages);
+        request.setAttribute("phong", p);
+        request.setAttribute("dsAnh", dsAnh);
+        request.setAttribute("dsChiTiet", dsCT);
 
-        // Forward sang JSP view (chỉ render)
-        request.getRequestDispatcher("/user/phong.jsp").forward(request, response);
+        String trangThai = p.getTrangThai() == null ? "" : p.getTrangThai().trim().toLowerCase();
+        boolean isAvailable = trangThai.contains("trống") || trangThai.contains("còn trống");
+        request.setAttribute("isAvailable", isAvailable);
+        request.getRequestDispatcher("/user/chitietphong.jsp").forward(request, response);
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
