@@ -30,7 +30,6 @@
                         <i class="bi bi-plus-circle me-1"></i> Thêm phòng
                     </button>
 
-                    <!-- FORM TÌM KIẾM (gửi GET đến servlet) -->
                     <form class="d-flex" action="${pageContext.request.contextPath}/QL-Phong" method="get">
                         <input type="hidden" name="action" value="search"/>
                         <input type="text" name="keyword" class="form-control me-2" placeholder="Tìm tên hoặc loại phòng..." value="${param.keyword}">

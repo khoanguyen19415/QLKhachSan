@@ -144,7 +144,7 @@ public class QuanLyPhongServlet extends HttpServlet {
             String trangThai = request.getParameter("trangThai");
 
             Phong p = new Phong(maPhong, tenPhong, loaiPhong, gia, moTa, trangThai);
-            boolean ok = phongDAO.update(p); // cần method update trong PhongDAO
+            boolean ok = phongDAO.update(p); 
 
             if (ok) {
                 request.setAttribute("success", "Cập nhật phòng thành công");

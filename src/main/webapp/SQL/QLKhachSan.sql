@@ -7,7 +7,7 @@ USE QLKhachSan;
 GO
 
 -- ==========================
--- 1️⃣ BẢNG TÀI KHOẢN
+-- BANG TAI KHOAN
 -- ==========================
 CREATE TABLE TaiKhoan (
     MaTK INT IDENTITY(1,1) PRIMARY KEY,
@@ -18,7 +18,7 @@ CREATE TABLE TaiKhoan (
 GO
 
 -- ==========================
--- 2️⃣ BẢNG KHÁCH HÀNG
+-- BANG KHACH HANG
 -- ==========================
 CREATE TABLE KhachHang (
     MaKH INT IDENTITY(1,1) PRIMARY KEY,
@@ -33,7 +33,7 @@ CREATE TABLE KhachHang (
 GO
 
 -- ==========================
--- 3️⃣ BẢNG PHÒNG
+-- BANG PHONG
 -- ==========================
 CREATE TABLE Phong (
     MaPhong INT IDENTITY(1,1) PRIMARY KEY,
@@ -45,7 +45,7 @@ CREATE TABLE Phong (
 );
 GO
 
--- ✅ ✅ ✅ THÊM BẢNG LƯU ẢNH PHÒNG
+--  BẢNG LƯU ẢNH PHÒNG
 CREATE TABLE PhongAnh (
     MaAnh INT IDENTITY(1,1) PRIMARY KEY,
     MaPhong INT NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE PhongAnh (
 GO
 
 -- ==========================
--- 4️⃣ BẢNG CHI TIẾT PHÒNG
+-- BANG CHI TIET PHONG
 -- ==========================
 CREATE TABLE ChiTietPhong (
     MaCTP INT IDENTITY(1,1) PRIMARY KEY,
@@ -67,7 +67,7 @@ CREATE TABLE ChiTietPhong (
 GO
 
 -- ==========================
--- 5️⃣ BẢNG ĐẶT PHÒNG
+-- BANG DAT PHONG
 -- ==========================
 CREATE TABLE DatPhong (
     MaDatPhong INT IDENTITY(1,1) PRIMARY KEY,
@@ -83,7 +83,7 @@ CREATE TABLE DatPhong (
 GO
 
 -- ====================================
--- INSERT 1️⃣: TÀI KHOẢN
+-- INSERT TAI KHOAN
 -- ====================================
 INSERT INTO TaiKhoan (TenDangNhap, MatKhau, ChucVu)
 VALUES 
@@ -91,7 +91,7 @@ VALUES
 GO
 
 -- ====================================
--- INSERT 2️⃣: KHÁCH HÀNG
+-- INSERT KHACH HANG
 -- ====================================
 INSERT INTO KhachHang (HoTen, NgaySinh, DiaChi, SoDienThoai, Email)
 VALUES
@@ -103,7 +103,7 @@ VALUES
 GO
 
 -- ====================================
--- INSERT 3️⃣: PHÒNG
+-- INSERT PHONG
 -- ====================================
 INSERT INTO Phong (TenPhong, LoaiPhong, Gia, MoTa, TrangThai)
 VALUES
@@ -116,7 +116,7 @@ VALUES
 GO
 
 -- ====================================
--- INSERT 4️⃣: CHI TIẾT PHÒNG
+-- INSERT CHI TIET PHONG
 -- ====================================
 INSERT INTO ChiTietPhong (MaPhong, TienNghi, MoTa)
 VALUES
@@ -129,7 +129,7 @@ VALUES
 GO
 
 -- ====================================
--- INSERT 5️⃣: ĐẶT PHÒNG
+-- INSERT DAT PHONG
 -- ====================================
 INSERT INTO DatPhong (MaKH, MaPhong, NgayDat, NgayNhan, NgayTra, TrangThai)
 VALUES

@@ -70,11 +70,9 @@ public class ChiTietPhongServlet extends HttpServlet {
             return;
         }
 
-        // Ảnh và tiện nghi
         List<PhongAnh> dsAnh = phongAnhDAO.getAnhTheoPhong(maPhong);
         List<ChiTietPhong> dsCT = chiTietDAO.getByPhong(maPhong);
 
-        // Normalize image paths: nếu đường dẫn không bắt đầu bằng '/' hoặc 'http' thì thêm contextPath
         if (dsAnh != null) {
             for (PhongAnh a : dsAnh) {
                 String src = a.getDuongDanAnh();

@@ -61,7 +61,6 @@
                                 <td>${kh.email}</td>
                                 <td>${kh.diaChi}</td>
                                 <td class="text-center">
-                                    <!-- nút sửa: gán data-* để JS đổ vào modal -->
                                     <button class="btn btn-sm btn-warning btn-edit" 
                                             data-makh="${kh.maKH}"
                                             data-hotenkh="${kh.hoTen}"
@@ -181,7 +180,6 @@
 
     <script>
         $(function() {
-            // khi bấm nút SỬA, đọc data-* và fill modal
             $(document).on('click', '.btn-edit', function() {
                 const btn = $(this);
                 $('#edit_maKH').val(btn.data('makh'));
@@ -195,11 +193,10 @@
                 myModal.show();
             });
 
-            // submit form sửa bằng AJAX
             $('#formSuaKh').submit(function(e) {
                 e.preventDefault();
                 var $form = $(this);
-                var data = $form.serialize(); // maKH, hoTen, soDienThoai, email, diaChi
+                var data = $form.serialize(); 
 
                 $.ajax({
                     url: '<%= request.getContextPath() %>/QL-Khachhang?action=update',
@@ -208,8 +205,7 @@
                     dataType: 'json',
                     success: function(res) {
                         if (res.status === 'success') {
-                            // đóng modal, thông báo rồi reload để bảng cập nhật (hoặc bạn có thể update DOM)
-                            $('#formSuaKhachHang').modal('hide'); // bootstrap 5 still works
+                            $('#formSuaKhachHang').modal('hide'); 
                             Swal.fire({
                                 position: 'center',
                                 icon: 'success',
@@ -217,7 +213,6 @@
                                 showConfirmButton: false,
                                 timer: 1400
                             }).then(() => {
-                                // reload page để lấy dữ liệu mới
                                 location.reload();
                             });
                         } else {

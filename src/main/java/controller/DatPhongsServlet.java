@@ -56,7 +56,7 @@ public class DatPhongsServlet extends HttpServlet {
 
         String action = request.getParameter("action");
         if (action == null) {
-            action = "view"; // view form
+            action = "view"; 
         }
         if (action.equals("view")) {
             showForm(request, response);
@@ -121,7 +121,6 @@ public class DatPhongsServlet extends HttpServlet {
             return;
         }
 
-        // 🔥 Luôn lấy lại dữ liệu phòng mới nhất từ DB (bỏ cache nếu có)
         Phong p = phongDAO.getById(maPhong);
         if (p == null) {
             response.sendRedirect(request.getContextPath() + "/phong");
@@ -146,11 +145,9 @@ public class DatPhongsServlet extends HttpServlet {
         Map<Integer, String> firstImages = new HashMap<>();
         firstImages.put(maPhong, firstImg);
 
-        // ✅ Xác định lại trạng thái phòng từ DB
         String trangThai = p.getTrangThai() == null ? "" : p.getTrangThai().trim().toLowerCase();
         boolean isAvailable = trangThai.contains("trống") || trangThai.contains("còn trống");
 
-        // ✅ Gửi dữ liệu mới nhất lên JSP
         request.setAttribute("phong", p);
         request.setAttribute("isAvailable", isAvailable);
         request.setAttribute("firstImages", firstImages);
@@ -167,7 +164,7 @@ public class DatPhongsServlet extends HttpServlet {
     private void doBook(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
             String maPhongStr = request.getParameter("maPhong");
-            String maKHStr = request.getParameter("maKH"); // bạn có thể lấy khách hiện tại từ session nếu login
+            String maKHStr = request.getParameter("maKH"); 
             String ngayNhanStr = request.getParameter("ngayNhan");
             String ngayTraStr = request.getParameter("ngayTra");
 
@@ -184,7 +181,6 @@ public class DatPhongsServlet extends HttpServlet {
             java.util.Date utilNgayNhan = sdf.parse(ngayNhanStr);
             java.util.Date utilNgayTra = sdf.parse(ngayTraStr);
 
-            // Kiểm tra trạng thái phòng hiện tại
             Phong p = phongDAO.getById(maPhong);
             if (p == null) {
                 request.setAttribute("error", "Không tìm thấy phòng");
@@ -199,11 +195,10 @@ public class DatPhongsServlet extends HttpServlet {
                 return;
             }
 
-            // Tạo DatPhong và lưu (sử dụng java.sql.Date)
             model.DatPhong dp = new model.DatPhong();
             dp.setMaKH(maKH);
             dp.setMaPhong(maPhong);
-            dp.setNgayDat(new java.util.Date()); // using java.util.Date in DTO, DAO will convert before insert
+            dp.setNgayDat(new java.util.Date()); 
             dp.setNgayNhan(new java.sql.Date(utilNgayNhan.getTime()));
             dp.setNgayTra(new java.sql.Date(utilNgayTra.getTime()));
             dp.setTrangThai("Chờ xác nhận");

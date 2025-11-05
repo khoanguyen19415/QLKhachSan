@@ -47,10 +47,8 @@ public class PhongServlet extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         
-          // Lấy tất cả phòng
         List<Phong> dsPhong = phongDAO.getAllPhong();
 
-        // Chuẩn bị map: MaPhong -> firstImagePath (đã thêm context path nếu cần)
         Map<Integer, String> firstImages = new HashMap<>();
         if (dsPhong != null) {
             for (Phong p : dsPhong) {
@@ -61,7 +59,6 @@ public class PhongServlet extends HttpServlet {
                         String src = imgs.get(0).getDuongDanAnh();
                         if (src != null) {
                             src = src.trim();
-                            // nếu đường dẫn không bắt đầu bằng / hoặc http thì thêm context path để hợp lệ
                             if (!src.startsWith("/") && !src.startsWith("http")) {
                                 src = request.getContextPath() + "/" + src;
                             }
@@ -79,7 +76,6 @@ public class PhongServlet extends HttpServlet {
         request.setAttribute("dsPhong", dsPhong);
         request.setAttribute("firstImages", firstImages);
 
-        // Forward sang JSP view (chỉ render)
         request.getRequestDispatcher("/user/phong.jsp").forward(request, response);
     }
 

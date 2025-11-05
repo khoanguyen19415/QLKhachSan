@@ -41,24 +41,18 @@ public class DashBoardServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
 
-        // 1) Tổng số phòng
         String sqlTotalRooms = "SELECT COUNT(*) FROM Phong";
         int totalRooms = countSingleValue(sqlTotalRooms);
 
-        // 2) Khách đang ở (đếm đơn có trạng thái 'Đã nhận' / chứa 'nhận')
-        // dùng LOWER để tránh vấn đề viết hoa
         String sqlGuests = "SELECT COUNT(*) FROM DatPhong WHERE LOWER(TrangThai) LIKE ?";
         int guests = countSingleValue(sqlGuests, "%nhận%");
 
-        // 3) Đơn đặt phòng (tính là tổng đơn KHÔNG bị hủy) — bạn có thể điều chỉnh logic nếu muốn chỉ tính 'Chờ'
         String sqlBookings = "SELECT COUNT(*) FROM DatPhong WHERE LOWER(TrangThai) NOT LIKE ?";
         int bookings = countSingleValue(sqlBookings, "%hủy%");
 
-        // 4) Hủy phòng (đếm các đơn có trạng thái chứa 'hủy')
         String sqlCancellations = "SELECT COUNT(*) FROM DatPhong WHERE LOWER(TrangThai) LIKE ?";
         int cancellations = countSingleValue(sqlCancellations, "%hủy%");
 
-        // Gán vào request attribute (JSP dùng ${totalRooms}, ${guests}, ${bookings}, ${cancellations})
         request.setAttribute("totalRooms", totalRooms);
         request.setAttribute("guests", guests);
         request.setAttribute("bookings", bookings);

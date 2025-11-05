@@ -25,7 +25,6 @@
                     <div class="title-row mb-3">
                         <h3 class="mb-0 bi bi-door-open"> Danh sách tiện nghi</h3>
                         <div class="title-actions">
-                            <!-- Nút mở modal rỗng để TH "Thêm chi tiết" -->
                             <button id="btnShowEdit" class="btn btn-sm btn-primary">
                                 <i class="bi bi-pencil-square"></i> Sửa / Thêm chi tiết phòng
                             </button>
@@ -149,21 +148,17 @@
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script>
             $(function () {
-                // Mở modal rỗng cho "Thêm"
                 $("#btnShowEdit").click(function () {
                     $("#maCTP").val("");
                     $("#tienNghi").val("");
                     $("#moTa").val("");
                     $("#deletedAnh").val("");
-                    // reset ảnh marked
                     $("#current-images .img-card").removeClass("marked-delete").find(".deleted-badge").addClass("d-none");
                     $("#current-images .btn-delete-img").removeClass("btn-danger").addClass("btn-outline-danger");
                     $("#preview").addClass("d-none").attr("src", "");
                     // mặc định form sẽ gửi "add" (JS sẽ set khi submit)
                     $("#overlay").fadeIn(180).css("display", "flex");
                 });
-
-                // Mở modal cho "Sửa" 1 chi tiết
                 $(document).on("click", ".btn-edit", function () {
                     const mactp = $(this).data("mactp");
                     const tiennghi = $(this).data("tiennghi") || "";
@@ -179,14 +174,13 @@
                     $("#overlay").fadeIn(180).css("display", "flex");
                 });
 
-                // đóng popup
                 $("#btnClose, #overlay").click(function (e) {
                     if (e.target.id === "overlay" || e.target.id === "btnClose") {
                         $("#overlay").fadeOut(180);
                     }
                 });
 
-                // preview ảnh
+
                 $("input[name='anh']").on("change", function (e) {
                     const f = e.target.files[0];
                     if (f) {
@@ -200,7 +194,7 @@
                     }
                 });
 
-                // đánh dấu xóa ảnh hiện có
+ 
                 let deletedIds = [];
                 $(document).on("click", ".btn-delete-img", function (e) {
                     e.stopPropagation();
@@ -223,12 +217,10 @@
                     $("#deletedAnh").val(deletedIds.join(","));
                 });
 
-                // submit: tự động chọn action add hoặc update
                 $("#formEditCTP").submit(function (e) {
                     e.preventDefault();
                     const form = this;
                     const fd = new FormData(form);
-                    // nếu maCTP rỗng -> add, else update
                     const mactp = $("#maCTP").val();
                     let url;
                     if (!mactp || mactp.trim() === "") {
@@ -244,16 +236,12 @@
                         contentType: false,
                         processData: false,
                         success: function (res) {
-                            // mặc định thông báo nếu server không trả message
                             let msg = "Cập nhật thành công!";
                             try {
-                                // parse nếu server trả string JSON
                                 var json = (typeof res === "string") ? JSON.parse(res) : res;
                                 if (json) {
-                                    // nếu server trả message thì hiện message đó
                                     if (json.message && json.message.trim() !== "")
                                         msg = json.message;
-                                    // nếu server trả status khác "success" -> show lỗi
                                     if (json.status && json.status !== "success") {
                                         Swal.fire({
                                             position: "center",
@@ -266,11 +254,9 @@
                                     }
                                 }
                             } catch (err) {
-                                // nếu không phải JSON thì fallback dùng msg mặc định
                                 console.warn("Response is not JSON, fallback to reload.");
                             }
 
-                            // Hiển thị SweetAlert giống thongbao.jsp
                             Swal.fire({
                                 position: "center",
                                 icon: "success",
@@ -279,7 +265,6 @@
                                 timer: 1600
                             });
 
-                            // reload sau khi thông báo tắt để cập nhật giao diện (kéo dài tí để thấy alert)
                             setTimeout(function () {
                                 location.reload();
                             }, 1700);
