@@ -1,3 +1,4 @@
+<!--datphong.jsp-->
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
@@ -65,35 +66,41 @@
                         <form class="shadow p-4 bg-light rounded" action="${pageContext.request.contextPath}/dat-phong" method="post">
                             <input type="hidden" name="action" value="book" />
                             <input type="hidden" name="maPhong" value="${phong.maPhong}" />
-                            <!-- GIẢ SỬ: bạn có thể lấy MaKH từ session khi user login. Tạm dùng input -->
-                            <div class="mb-3">
-                                <label class="form-label">Mã khách (MaKH) - (vd: 1 nếu chưa login)</label>
-                                <input type="number" name="maKH" class="form-control" required value="1">
-                            </div>
+
+                            <!-- ✅ Lấy mã KH từ session -->
+                            <c:if test="${not empty sessionScope.kh}">
+                                <input type="hidden" name="maKH" value="${sessionScope.kh.maKH}">
+                            </c:if>
+                            <c:if test="${empty sessionScope.kh}">
+                                <div class="alert alert-warning text-center">
+                                    Bạn cần <a href="${pageContext.request.contextPath}/TaiKhoanServlet?action=showLogin">đăng nhập</a> để đặt phòng.
+                                </div>
+                            </c:if>
 
                             <div class="mb-3">
                                 <label class="form-label">Ngày nhận</label>
-                                <input type="date" name="ngayNhan" class="form-control" required>
+                                <input type="date" name="ngayNhan" class="form-control" required value="${ngayNhan}">
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label">Ngày trả</label>
-                                <input type="date" name="ngayTra" class="form-control" required>
+                                <input type="date" name="ngayTra" class="form-control" required value="${ngayTra}">
                             </div>
 
                             <div class="text-center">
                                 <c:choose>
-                                    <c:when test="${isAvailable}">
+                                    <c:when test="${isAvailable && not empty sessionScope.kh}">
                                         <button type="submit" class="btn btn-primary px-4">Xác nhận đặt phòng</button>
                                     </c:when>
                                     <c:otherwise>
-                                        <button type="button" class="btn btn-secondary px-4" disabled>Không thể đặt (Đã đặt)</button>
+                                        <button type="button" class="btn btn-secondary px-4" disabled>
+                                            Không thể đặt phòng
+                                        </button>
+                                        <div class="mt-3 text-center">
+                                            <a href="${pageContext.request.contextPath}/phong" class="btn btn-outline-secondary">Quay lại danh sách</a>
+                                        </div>
                                     </c:otherwise>
                                 </c:choose>
-
-                                <div class="mt-3 text-center">
-                                    <a href="${pageContext.request.contextPath}/phong" class="btn btn-outline-secondary">Quay lại danh sách</a>
-                                </div>
                             </div>
                         </form>
                     </div>

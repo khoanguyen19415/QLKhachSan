@@ -7,6 +7,7 @@ public class DatPhong {
     private int maDatPhong;
     private int maKH;
     private int maPhong;
+    private String tenPhong; // ✅ thêm thuộc tính tên phòng
     private Date ngayDat;
     private Date ngayNhan;
     private Date ngayTra;
@@ -15,16 +16,18 @@ public class DatPhong {
     public DatPhong() {
     }
 
-    public DatPhong(int maDatPhong, int maKH, int maPhong, Date ngayDat, Date ngayNhan, Date ngayTra, String trangThai) {
+    public DatPhong(int maDatPhong, int maKH, int maPhong, String tenPhong, Date ngayDat, Date ngayNhan, Date ngayTra, String trangThai) {
         this.maDatPhong = maDatPhong;
         this.maKH = maKH;
         this.maPhong = maPhong;
+        this.tenPhong = tenPhong;
         this.ngayDat = ngayDat;
         this.ngayNhan = ngayNhan;
         this.ngayTra = ngayTra;
         this.trangThai = trangThai;
     }
 
+    // --- Getter/Setter ---
     public int getMaDatPhong() {
         return maDatPhong;
     }
@@ -47,6 +50,14 @@ public class DatPhong {
 
     public void setMaPhong(int maPhong) {
         this.maPhong = maPhong;
+    }
+
+    public String getTenPhong() {
+        return tenPhong;
+    }
+
+    public void setTenPhong(String tenPhong) {
+        this.tenPhong = tenPhong;
     }
 
     public Date getNgayDat() {

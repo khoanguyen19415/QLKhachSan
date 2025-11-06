@@ -24,7 +24,6 @@ CREATE TABLE KhachHang (
     MaKH INT IDENTITY(1,1) PRIMARY KEY,
     MaTK INT NULL,
     HoTen NVARCHAR(100) NOT NULL,
-    NgaySinh DATE NULL,
     DiaChi NVARCHAR(255) NULL,
     SoDienThoai NVARCHAR(15) NULL,
     Email NVARCHAR(100) NULL,
@@ -73,6 +72,7 @@ CREATE TABLE DatPhong (
     MaDatPhong INT IDENTITY(1,1) PRIMARY KEY,
     MaKH INT NOT NULL,
     MaPhong INT NOT NULL,
+    TenPhong NVARCHAR(100) NOT NULL,
     NgayDat DATE NOT NULL,
     NgayNhan DATE NOT NULL,
     NgayTra DATE NOT NULL,
@@ -93,13 +93,13 @@ GO
 -- ====================================
 -- INSERT KHACH HANG
 -- ====================================
-INSERT INTO KhachHang (HoTen, NgaySinh, DiaChi, SoDienThoai, Email)
+INSERT INTO KhachHang (HoTen, DiaChi, SoDienThoai, Email)
 VALUES
-(N'Nguyễn Văn A', '1995-05-12', N'Hà Nội', '0912345678', 'vana@gmail.com'),
-(N'Trần Thị B', '1998-08-22', N'Đà Nẵng', '0905123456', 'thib@gmail.com'),
-(N'Lê Văn C', '1992-12-01', N'Hồ Chí Minh', '0988777666', 'vanc@gmail.com'),
-(N'Phạm Thị D', '2000-03-15', N'Cần Thơ', '0977555444', 'thid@gmail.com'),
-(N'Hoàng Văn E', '1997-09-09', N'Hải Phòng', '0966333222', 'vane@gmail.com');
+(N'Nguyễn Văn A', N'Hà Nội', '0912345678', 'vana@gmail.com'),
+(N'Trần Thị B',  N'Đà Nẵng', '0905123456', 'thib@gmail.com'),
+(N'Lê Văn C',  N'Hồ Chí Minh', '0988777666', 'vanc@gmail.com'),
+(N'Phạm Thị D',  N'Cần Thơ', '0977555444', 'thid@gmail.com'),
+(N'Hoàng Văn E',  N'Hải Phòng', '0966333222', 'vane@gmail.com');
 GO
 
 -- ====================================
@@ -131,11 +131,11 @@ GO
 -- ====================================
 -- INSERT DAT PHONG
 -- ====================================
-INSERT INTO DatPhong (MaKH, MaPhong, NgayDat, NgayNhan, NgayTra, TrangThai)
+INSERT INTO DatPhong (MaKH, MaPhong, TenPhong, NgayDat, NgayNhan, NgayTra, TrangThai)
 VALUES
-(1, 3, '2025-10-10', '2025-10-15', '2025-10-18', N'Đã nhận'),
-(2, 6, '2025-10-12', '2025-10-20', '2025-10-22', N'Chờ xác nhận'),
-(3, 1, '2025-10-08', '2025-10-10', '2025-10-12', N'Đã trả phòng'),
-(4, 5, '2025-09-28', '2025-09-30', '2025-10-02', N'Đã nhận'),
-(5, 4, '2025-10-01', '2025-10-05', '2025-10-08', N'Hủy');
+(1, 3, N'Phòng Đôi', '2025-10-10', '2025-10-15', '2025-10-18', N'Đã nhận'),
+(2, 6, N'Phòng Gia Đình', '2025-10-12', '2025-10-20', '2025-10-22', N'Chờ xác nhận'),
+(3, 1, N'Phòng VIP', '2025-10-08', '2025-10-10', '2025-10-12', N'Đã trả phòng'),
+(4, 5, N'Phòng Tiêu Chuẩn', '2025-09-28', '2025-09-30', '2025-10-02', N'Đã nhận'),
+(5, 4, N'Phòng Deluxe', '2025-10-01', '2025-10-05', '2025-10-08', N'Hủy');
 GO

@@ -16,8 +16,10 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import model.DatPhong;
 import model.DatPhongDAO;
+import model.KhachHang;
 import model.Phong;
 import model.PhongAnh;
 import model.PhongAnhDAO;
@@ -56,7 +58,7 @@ public class DatPhongsServlet extends HttpServlet {
 
         String action = request.getParameter("action");
         if (action == null) {
-            action = "view"; 
+            action = "view";
         }
         if (action.equals("view")) {
             showForm(request, response);
@@ -151,35 +153,36 @@ public class DatPhongsServlet extends HttpServlet {
         request.setAttribute("phong", p);
         request.setAttribute("isAvailable", isAvailable);
         request.setAttribute("firstImages", firstImages);
-        
-        
-        
-        
-        
-        
 
         request.getRequestDispatcher("/user/datphong.jsp").forward(request, response);
     }
 
     private void doBook(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         try {
+            HttpSession session = request.getSession(false);
+            KhachHang kh = (session != null) ? (KhachHang) session.getAttribute("kh") : null;
+
+            if (kh == null) {
+                response.sendRedirect(request.getContextPath() + "/TaiKhoanServlet?action=showLogin");
+                return;
+            }
+
             String maPhongStr = request.getParameter("maPhong");
-            String maKHStr = request.getParameter("maKH"); 
             String ngayNhanStr = request.getParameter("ngayNhan");
             String ngayTraStr = request.getParameter("ngayTra");
 
-            if (maPhongStr == null || maKHStr == null || ngayNhanStr == null || ngayTraStr == null) {
+            if (maPhongStr == null || ngayNhanStr == null || ngayTraStr == null) {
                 request.setAttribute("error", "Dữ liệu đặt phòng thiếu");
                 showForm(request, response);
                 return;
             }
 
             int maPhong = Integer.parseInt(maPhongStr);
-            int maKH = Integer.parseInt(maKHStr);
+            int maKH = kh.getMaKH();
 
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
-            java.util.Date utilNgayNhan = sdf.parse(ngayNhanStr);
-            java.util.Date utilNgayTra = sdf.parse(ngayTraStr);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            Date utilNgayNhan = sdf.parse(ngayNhanStr);
+            Date utilNgayTra = sdf.parse(ngayTraStr);
 
             Phong p = phongDAO.getById(maPhong);
             if (p == null) {
@@ -187,6 +190,8 @@ public class DatPhongsServlet extends HttpServlet {
                 showForm(request, response);
                 return;
             }
+
+            // Kiểm tra phòng có sẵn
             if (!"Trống".equalsIgnoreCase(p.getTrangThai()) && !"Còn trống".equalsIgnoreCase(p.getTrangThai())) {
                 request.setAttribute("error", "Phòng hiện không còn trống, không thể đặt");
                 request.setAttribute("phong", p);
@@ -195,10 +200,12 @@ public class DatPhongsServlet extends HttpServlet {
                 return;
             }
 
-            model.DatPhong dp = new model.DatPhong();
+            // ✅ Tạo đơn đặt phòng
+            DatPhong dp = new DatPhong();
             dp.setMaKH(maKH);
             dp.setMaPhong(maPhong);
-            dp.setNgayDat(new java.util.Date()); 
+            dp.setTenPhong(p.getTenPhong()); // ✅ Lưu tên phòng vào DatPhong
+            dp.setNgayDat(new Date());
             dp.setNgayNhan(new java.sql.Date(utilNgayNhan.getTime()));
             dp.setNgayTra(new java.sql.Date(utilNgayTra.getTime()));
             dp.setTrangThai("Chờ xác nhận");
@@ -207,16 +214,15 @@ public class DatPhongsServlet extends HttpServlet {
 
             if (okInsert) {
                 phongDAO.updateStatus(maPhong, "Đã đặt");
-                request.setAttribute("success", "Đặt phòng thành công. Hệ thống sẽ xử lý đơn của bạn.");
-                showForm(request, response);
-                return;
+                request.setAttribute("success", "Đặt phòng thành công! Đơn của bạn đang chờ xác nhận.");
             } else {
-                request.setAttribute("error", "Đặt phòng thất bại, thử lại sau.");
-                request.setAttribute("phong", p);
-                request.setAttribute("isAvailable", true);
-                request.getRequestDispatcher("/user/datphong.jsp").forward(request, response);
-                return;
+                request.setAttribute("error", "Đặt phòng thất bại, vui lòng thử lại sau.");
             }
+            request.setAttribute("ngayNhan", ngayNhanStr);
+            request.setAttribute("ngayTra", ngayTraStr);
+
+            showForm(request, response);
+
         } catch (Exception ex) {
             ex.printStackTrace();
             request.setAttribute("error", "Lỗi khi đặt phòng: " + ex.getMessage());

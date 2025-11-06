@@ -1,5 +1,7 @@
+<!--chitietphong.jsp-->
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -25,7 +27,7 @@
                             <div class="card-body">
                                 <h3 class="card-title">${phong.tenPhong}</h3>
                                 <p class="mb-1">Loại phòng: <strong>${phong.loaiPhong}</strong></p>
-                                <p class="mb-1">Giá / đêm: <strong><fmt:formatNumber value="${phong.gia}" type="number" /></strong></p>
+                                <p class="mb-1">Giá / đêm: <strong><fmt:formatNumber value="${phong.gia}" type="number" />đ</strong></p>
 
                                 <!-- Trạng thái -->
                                 <c:choose>

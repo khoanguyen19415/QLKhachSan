@@ -1,4 +1,4 @@
-
+<!--thongbao.jsp-->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <% if (request.getAttribute("success") != null) { %>

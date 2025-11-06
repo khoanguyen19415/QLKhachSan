@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import jdk.javadoc.doclet.Reporter;
 import model.KhachHang;
 import model.KhachHangDAO;
+import model.TaiKhoanDAO;
 
 /**
  *
@@ -42,6 +43,8 @@ public class QuanLyKhServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
 
         String action = request.getParameter("action");
@@ -66,16 +69,11 @@ public class QuanLyKhServlet extends HttpServlet {
                     request.getRequestDispatcher("/admin/quanlykhachhang.jsp").forward(request, response);
                     break;
                 case "delete":
-                    String makhachhang_tr = request.getParameter("id");
-                    int id = Integer.parseInt(makhachhang_tr);
-
-                    khDAO.deleteKhachHang(id);
-                    request.setAttribute("success", "Xóa khách hàng thành công");
-                    request.getRequestDispatcher("/QL-Khachhang?action=list").forward(request, response);
+                    XuLyDelete(request, response);
                     break;
-                    case "update": // mới: xử lý AJAX cập nhật khách hàng
-                XuLySua(request, response);
-                break;
+                case "update": // mới: xử lý AJAX cập nhật khách hàng
+                    XuLySua(request, response);
+                    break;
             }
         }
 
@@ -171,6 +169,31 @@ public class QuanLyKhServlet extends HttpServlet {
             e.printStackTrace();
             response.getWriter().print("{\"status\":\"error\",\"message\":\"Lỗi khi cập nhật khách hàng\"}");
         }
+    }
+
+    private void XuLyDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String makhachhang_tr = request.getParameter("id");
+        try {
+            int idKH = Integer.parseInt(makhachhang_tr);
+            KhachHang kh = khDAO.getById(idKH);
+            if (kh == null) {
+                request.setAttribute("error", "Không tìm thấy khách hàng");
+            } else {
+                Integer maTK = kh.getMaTK();
+                boolean okDelKH = khDAO.deleteKhachHang(idKH);
+                if (okDelKH) {
+                    if (maTK != null) {
+                        new TaiKhoanDAO().deleteById(maTK);
+                    }
+                    request.setAttribute("success", "Xóa khách hàng (và tài khoản nếu có) thành công");
+                } else {
+                    request.setAttribute("error", "Xóa khách hàng thất bại");
+                }
+            }
+        } catch (NumberFormatException ex) {
+            request.setAttribute("error", "Mã không hợp lệ");
+        }
+        request.getRequestDispatcher("/QL-Khachhang?action=list").forward(request, response);
     }
 
 }

@@ -1,19 +1,27 @@
-<%@ page contentType="text/html;charset=UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="vi">
-    <head>
-        <title>Lịch sử đặt phòng - Sunshine Hotel</title>
-        <jsp:include page="layout/header.jsp"/>
-        <link rel="stylesheet" href="<%= request.getContextPath()%>/css/user.css">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    </head>
-    <body>
-        <%@ include file="../thongbao.jsp" %>
-        <jsp:include page="layout/nav.jsp"/>
+<head>
+    <meta charset="UTF-8">
+    <title>Lịch sử đặt phòng - Sunshine Hotel</title>
+    <jsp:include page="layout/header.jsp"/>
+    <link rel="stylesheet" href="<%= request.getContextPath()%>/css/user.css">
+</head>
+<body>
+    <%@ include file="../thongbao.jsp" %>
+    <jsp:include page="layout/nav.jsp"/>
 
-        <div class="container py-5">
-            <h2 class="text-center text-primary mb-4">Lịch sử đặt phòng</h2>
+    <div class="container py-5">
+        <h2 class="text-center text-primary mb-4">Lịch sử đặt phòng</h2>
 
+        <c:if test="${empty lichSu}">
+            <div class="alert alert-info text-center">
+                Bạn chưa có đơn đặt phòng nào.
+            </div>
+        </c:if>
+
+        <c:if test="${not empty lichSu}">
             <table class="table table-bordered text-center">
                 <thead class="table-dark">
                     <tr>
@@ -25,24 +33,35 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>DP001</td>
-                        <td>Phòng Đôi</td>
-                        <td>2025-10-20</td>
-                        <td>2025-10-23</td>
-                        <td><span class="badge bg-success">Đã nhận</span></td>
-                    </tr>
-                    <tr>
-                        <td>DP002</td>
-                        <td>Phòng VIP</td>
-                        <td>2025-08-10</td>
-                        <td>2025-08-12</td>
-                        <td><span class="badge bg-secondary">Đã trả</span></td>
-                    </tr>
+                    <c:forEach var="dp" items="${lichSu}">
+                        <tr>
+                            <td>DP${dp.maDatPhong}</td>
+                            <td>${dp.tenPhong}</td>
+                            <td>${dp.ngayNhan}</td>
+                            <td>${dp.ngayTra}</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${dp.trangThai == 'Đã nhận'}">
+                                        <span class="badge bg-success">${dp.trangThai}</span>
+                                    </c:when>
+                                    <c:when test="${dp.trangThai == 'Đã trả'}">
+                                        <span class="badge bg-secondary">${dp.trangThai}</span>
+                                    </c:when>
+                                    <c:when test="${dp.trangThai == 'Chờ duyệt'}">
+                                        <span class="badge bg-warning text-dark">${dp.trangThai}</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="badge bg-info">${dp.trangThai}</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                        </tr>
+                    </c:forEach>
                 </tbody>
             </table>
-        </div>
+        </c:if>
+    </div>
 
-        <jsp:include page="layout/footer.jsp"/>
-    </body>
+    <jsp:include page="layout/footer.jsp"/>
+</body>
 </html>

@@ -5,11 +5,10 @@
   <title>Sunshine Hotel - Trang chủ</title>
   <jsp:include page="layout/header.jsp"/>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/css/user.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-
-<!-- Banner -->
-<!-- Banner có slideshow -->
+<%@ include file="../thongbao.jsp" %>
 <jsp:include page="layout/nav.jsp"/>
 <jsp:include page="layout/slider.jsp"/>
 

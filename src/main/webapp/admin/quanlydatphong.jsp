@@ -44,6 +44,7 @@
                                 <th>Mã đơn</th>
                                 <th>Khách (ID)</th>
                                 <th>Phòng (ID)</th>
+                                <th>Tên Phòng</th>
                                 <th>Ngày nhận</th>
                                 <th>Ngày trả</th>
                                 <th>Trạng thái</th>
@@ -56,6 +57,7 @@
                                     <td class="text-center">DP<c:out value="${dp.maDatPhong}" /></td>
                                     <td class="text-center"><c:out value="${dp.maKH}" /></td>
                                     <td class="text-center"><c:out value="${dp.maPhong}" /></td>
+                                    <td class="text-center"><c:out value="${dp.tenPhong}" /></td>
                                     <td class="text-center"><c:out value="${dp.ngayNhan}" /></td>
                                     <td class="text-center"><c:out value="${dp.ngayTra}" /></td>
                                     <td class="text-center">
