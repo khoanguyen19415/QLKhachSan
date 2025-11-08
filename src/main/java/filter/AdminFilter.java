@@ -24,7 +24,7 @@ import model.TaiKhoan;
  *
  * @author linhdhdi4
  */
-@WebFilter(filterName = "AdminFilter", urlPatterns = {"/quan-tri", "/quan-ly-phong", "/quan-ly-dat-phong", "/quan-ly-khach-hang"})
+@WebFilter(filterName = "AdminFilter", urlPatterns = {"/quan-tri", "/QL-Phong", "/QL-datphong", "/QL-Khachhang"})
 public class AdminFilter implements Filter {
 
     private static final boolean debug = true;
