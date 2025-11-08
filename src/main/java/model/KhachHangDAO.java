@@ -8,7 +8,7 @@ public class KhachHangDAO {
 
     public List<KhachHang> getAll() {
         List<KhachHang> list = new ArrayList<>();
-        String sql = "SELECT * FROM KhachHang ORDER BY MaKH DESC";
+        String sql = "SELECT * FROM KhachHang ORDER BY MaKH ASC";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(new KhachHang(
@@ -164,4 +164,43 @@ public class KhachHangDAO {
         }
         return list;
     }
+    
+    public int countAll() {
+    String sql = "SELECT COUNT(*) FROM KhachHang";
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) return rs.getInt(1);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return 0;
+}
+
+public List<KhachHang> getPaged(int offset, int limit) {
+    List<KhachHang> list = new ArrayList<>();
+    String sql = "SELECT * FROM KhachHang ORDER BY MaKH ASC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, offset);
+        ps.setInt(2, limit);
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(new KhachHang(
+                        rs.getInt("MaKH"),
+                        (rs.getObject("MaTK") != null) ? rs.getInt("MaTK") : null,
+                        rs.getString("HoTen"),
+                        rs.getString("SoDienThoai"),
+                        rs.getString("Email"),
+                        rs.getString("DiaChi")
+                ));
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return list;
+}
+
 }

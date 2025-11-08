@@ -235,4 +235,48 @@ public class DatPhongDAO {
         }
         return list;
     }
+    
+    
+    public int countAll() {
+    String sql = "SELECT COUNT(*) FROM DatPhong";
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        if (rs.next()) return rs.getInt(1);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return 0;
+}
+
+public List<DatPhong> getPaged(int offset, int limit) {
+    List<DatPhong> list = new ArrayList<>();
+    String sql = "SELECT dp.*, p.TenPhong FROM DatPhong dp "
+               + "LEFT JOIN Phong p ON dp.MaPhong = p.MaPhong "
+               + "ORDER BY dp.MaDatPhong ASC "
+               + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, offset);
+        ps.setInt(2, limit);
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                DatPhong dp = new DatPhong();
+                dp.setMaDatPhong(rs.getInt("MaDatPhong"));
+                dp.setMaKH(rs.getInt("MaKH"));
+                dp.setMaPhong(rs.getInt("MaPhong"));
+                dp.setTenPhong(rs.getString("TenPhong"));
+                dp.setNgayNhan(rs.getDate("NgayNhan"));
+                dp.setNgayTra(rs.getDate("NgayTra"));
+                dp.setTrangThai(rs.getString("TrangThai"));
+                list.add(dp);
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return list;
+}
+
 }

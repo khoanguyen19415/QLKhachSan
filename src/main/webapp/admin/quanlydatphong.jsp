@@ -124,14 +124,42 @@
 
                                                 <c:otherwise>
                                                     <button class="btn btn-sm btn-secondary" disabled><i class="bi bi-lock"></i></button>
-                                                </c:otherwise>
-                                            </c:choose>
+                                                    </c:otherwise>
+                                                </c:choose>
                                         </div>
                                     </td>
                                 </tr>
                             </c:forEach>
                         </tbody>
                     </table>
+                    <!-- ======= Pagination ======= -->
+                    <div class="mt-4 d-flex flex-column align-items-center">
+                        <div class="text-muted mb-2">
+                            Trang ${currentPage} / ${totalPages} — Tổng <strong>${totalItems}</strong> đơn đặt phòng
+                        </div>
+
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center mb-0">
+                                <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                                    <a class="page-link" href="${pageContext.request.contextPath}/QL-datphong?action=list&page=${currentPage-1}&size=${pageSize}" aria-label="Previous">
+                                        &laquo;
+                                    </a>
+                                </li>
+
+                                <c:forEach begin="1" end="${totalPages}" var="i">
+                                    <li class="page-item ${i == currentPage ? 'active' : ''}">
+                                        <a class="page-link" href="${pageContext.request.contextPath}/QL-datphong?action=list&page=${i}&size=${pageSize}">${i}</a>
+                                    </li>
+                                </c:forEach>
+
+                                <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                                    <a class="page-link" href="${pageContext.request.contextPath}/QL-datphong?action=list&page=${currentPage+1}&size=${pageSize}" aria-label="Next">
+                                        &raquo;
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
             </div>
         </div>

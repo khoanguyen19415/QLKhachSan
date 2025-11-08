@@ -24,7 +24,7 @@ import model.TaiKhoan;
  *
  * @author linhdhdi4
  */
-@WebFilter(filterName = "AdminFilter", urlPatterns = {"/admin/*"})
+@WebFilter(filterName = "AdminFilter", urlPatterns = {"/quan-tri", "/quan-ly-phong", "/quan-ly-dat-phong", "/quan-ly-khach-hang"})
 public class AdminFilter implements Filter {
 
     private static final boolean debug = true;
@@ -109,7 +109,7 @@ public class AdminFilter implements Filter {
 
         TaiKhoan tk = (session != null) ? (TaiKhoan) session.getAttribute("tk") : null;
 
-        if (tk == null || !"Admin".equalsIgnoreCase(tk.getChucVu())) {
+        if (tk == null || !"admin".equalsIgnoreCase(tk.getChucVu())) {
             res.sendRedirect(req.getContextPath() + "/TaiKhoanServlet?action=showLogin");
             return;
         }

@@ -73,8 +73,48 @@ public class QuanLyDatPhongServlet extends HttpServlet {
     }
 
     private void list(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        var ds = dpDAO.getAll();
+        String pageParam = request.getParameter("page");
+        String sizeParam = request.getParameter("size");
+
+        int page = 1;
+        int pageSize = 6; // số đơn đặt phòng mỗi trang
+
+        try {
+            if (pageParam != null) {
+                page = Math.max(1, Integer.parseInt(pageParam));
+            }
+        } catch (NumberFormatException e) {
+            page = 1;
+        }
+
+        try {
+            if (sizeParam != null) {
+                pageSize = Math.max(1, Integer.parseInt(sizeParam));
+            }
+        } catch (NumberFormatException e) {
+            pageSize = 6;
+        }
+
+        int totalItems = dpDAO.countAll(); // tổng số đơn đặt phòng
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        if (totalPages <= 0) {
+            totalPages = 1;
+        }
+        if (page > totalPages) {
+            page = totalPages;
+        }
+
+        int offset = (page - 1) * pageSize;
+
+        // Lấy danh sách đặt phòng theo trang
+        List<DatPhong> ds = dpDAO.getPaged(offset, pageSize);
+
         request.setAttribute("dsDatPhong", ds);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
+        request.setAttribute("totalItems", totalItems);
+
         request.getRequestDispatcher("/admin/quanlydatphong.jsp").forward(request, response);
     }
 
@@ -189,7 +229,7 @@ public class QuanLyDatPhongServlet extends HttpServlet {
     }
 
     private void search(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-         String keyword = request.getParameter("keyword");
+        String keyword = request.getParameter("keyword");
         List<DatPhong> ds = dpDAO.search(keyword);
         request.setAttribute("dsDatPhong", ds);
         request.setAttribute("keyword", keyword);

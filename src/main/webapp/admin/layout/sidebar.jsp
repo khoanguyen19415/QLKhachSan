@@ -19,7 +19,7 @@
         <i class="bi bi-person-lines-fill me-2"></i> Khách hàng
     </a>
 
-    <a href=#" class="nav-link">
+    <a href="Thong-Ke" class="nav-link">
         <i class="bi bi-bar-chart-line me-2"></i> Thống kê
     </a>
 

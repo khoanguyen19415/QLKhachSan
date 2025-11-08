@@ -28,12 +28,13 @@ public class PhongServlet extends HttpServlet {
 
     private PhongDAO phongDAO;
     private PhongAnhDAO phongAnhDAO;
-    
+
     @Override
     public void init() throws ServletException {
         phongDAO = new PhongDAO();
         phongAnhDAO = new PhongAnhDAO();
     }
+
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -46,9 +47,46 @@ public class PhongServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        
-        List<Phong> dsPhong = phongDAO.getAllPhong();
 
+        // --- ĐỌC THAM SỐ PHÂN TRANG ---
+        String pageParam = request.getParameter("page");
+        String sizeParam = request.getParameter("size");
+
+        int page = 1;
+        int pageSize = 6; // mặc định 6 phòng / trang
+
+        try {
+            if (pageParam != null) {
+                page = Math.max(1, Integer.parseInt(pageParam));
+            }
+        } catch (NumberFormatException ex) {
+            page = 1;
+        }
+
+        try {
+            if (sizeParam != null) {
+                pageSize = Math.max(1, Integer.parseInt(sizeParam));
+            }
+        } catch (NumberFormatException ex) {
+            pageSize = 6;
+        }
+
+        // --- Tính tổng và tổng trang ---
+        int totalItems = phongDAO.countAllPhong();
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        if (totalPages <= 0) {
+            totalPages = 1;
+        }
+        if (page > totalPages) {
+            page = totalPages;
+        }
+
+        int offset = (page - 1) * pageSize;
+
+        // --- Lấy danh sách phòng theo trang ---
+        List<Phong> dsPhong = phongDAO.getPaged(offset, pageSize);
+
+        // --- Lấy ảnh đầu tiên cho từng phòng của trang này ---
         Map<Integer, String> firstImages = new HashMap<>();
         if (dsPhong != null) {
             for (Phong p : dsPhong) {
@@ -73,8 +111,13 @@ public class PhongServlet extends HttpServlet {
             }
         }
 
+        // --- Đặt attribute cho JSP ---
         request.setAttribute("dsPhong", dsPhong);
         request.setAttribute("firstImages", firstImages);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
+        request.setAttribute("totalItems", totalItems);
 
         request.getRequestDispatcher("/user/phong.jsp").forward(request, response);
     }

@@ -12,6 +12,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.Request;
 import model.PhongDAO;
 import model.Phong;
 
@@ -50,9 +51,7 @@ public class QuanLyPhongServlet extends HttpServlet {
 
         switch (action) {
             case "list":
-                var dsPhong = phongDAO.getAllPhong();
-                request.setAttribute("dsPhong", dsPhong);
-                request.getRequestDispatcher("/admin/quanlyphong.jsp").forward(request, response);
+                ListPhong(request, response);
                 break;
             case "add":
                 XuLyThem(request, response);
@@ -144,7 +143,7 @@ public class QuanLyPhongServlet extends HttpServlet {
             String trangThai = request.getParameter("trangThai");
 
             Phong p = new Phong(maPhong, tenPhong, loaiPhong, gia, moTa, trangThai);
-            boolean ok = phongDAO.update(p); 
+            boolean ok = phongDAO.update(p);
 
             if (ok) {
                 request.setAttribute("success", "Cập nhật phòng thành công");
@@ -160,10 +159,61 @@ public class QuanLyPhongServlet extends HttpServlet {
 
     private void XuLyTimKiem(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String keyword = request.getParameter("keyword");
-        if (keyword == null) keyword = "";
+        if (keyword == null) {
+            keyword = "";
+        }
         List<Phong> dsPhong = phongDAO.search(keyword);
         request.setAttribute("dsPhong", dsPhong);
         request.setAttribute("keyword", keyword);
+        request.getRequestDispatcher("/admin/quanlyphong.jsp").forward(request, response);
+    }
+
+    private void ListPhong(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // --- Đọc tham số phân trang ---
+        String pageParam = request.getParameter("page");
+        String sizeParam = request.getParameter("size");
+
+        int page = 1;
+        int pageSize = 6; // mặc định 6 phòng / trang
+
+        try {
+            if (pageParam != null) {
+                page = Math.max(1, Integer.parseInt(pageParam));
+            }
+        } catch (NumberFormatException e) {
+            page = 1;
+        }
+
+        try {
+            if (sizeParam != null) {
+                pageSize = Math.max(1, Integer.parseInt(sizeParam));
+            }
+        } catch (NumberFormatException e) {
+            pageSize = 6;
+        }
+
+        // --- Tính tổng số phòng & tổng số trang ---
+        int totalItems = phongDAO.countAllPhong(); // cần có hàm này trong DAO
+        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
+        if (totalPages <= 0) {
+            totalPages = 1;
+        }
+        if (page > totalPages) {
+            page = totalPages;
+        }
+
+        int offset = (page - 1) * pageSize;
+
+        // --- Lấy danh sách phòng theo phân trang ---
+        List<Phong> dsPhong = phongDAO.getPaged(offset, pageSize);
+
+        // --- Đặt dữ liệu cho JSP ---
+        request.setAttribute("dsPhong", dsPhong);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", pageSize);
+        request.setAttribute("totalItems", totalItems);
+
         request.getRequestDispatcher("/admin/quanlyphong.jsp").forward(request, response);
     }
 }

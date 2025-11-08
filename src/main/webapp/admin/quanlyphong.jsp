@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -25,17 +26,17 @@
                         <i class="bi bi-door-open me-2"></i>Quản lý phòng
                     </h3>
                     <hr>
-                <div class="d-flex justify-content-between mb-3">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalThemPhong">
-                        <i class="bi bi-plus-circle me-1"></i> Thêm phòng
-                    </button>
+                    <div class="d-flex justify-content-between mb-3">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalThemPhong">
+                            <i class="bi bi-plus-circle me-1"></i> Thêm phòng
+                        </button>
 
-                    <form class="d-flex" action="${pageContext.request.contextPath}/QL-Phong" method="get">
-                        <input type="hidden" name="action" value="search"/>
-                        <input type="text" name="keyword" class="form-control me-2" placeholder="Tìm tên hoặc loại phòng..." value="${param.keyword}">
-                        <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
-                    </form>
-                </div>
+                        <form class="d-flex" action="${pageContext.request.contextPath}/QL-Phong" method="get">
+                            <input type="hidden" name="action" value="search"/>
+                            <input type="text" name="keyword" class="form-control me-2" placeholder="Tìm tên hoặc loại phòng..." value="${param.keyword}">
+                            <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+                        </form>
+                    </div>
 
                     <table class="table table-hover table-bordered align-middle">
                         <thead class="table-primary text-center">
@@ -57,10 +58,31 @@
                                     <td>${p.loaiPhong}</td>
                                     <td ><fmt:formatNumber value="${p.gia}" type="number" groupingUsed="true"/> đ / đêm</td>
                                     <td>${p.moTa}</td>
-                                    <td>
-                                        <span class="${p.trangThai eq 'trống' ? 'status-available' : 'status-unavailable'}"></span>
-                                        ${p.trangThai}
+                                    <td class="text-center">
+                                        <c:choose>
+                                            <c:when test="${fn:containsIgnoreCase(p.trangThai, 'trống')}">
+                                                <span class="badge bg-success px-3 py-2">
+                                                    <i class="bi bi-check-circle me-1"></i> Trống
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${fn:containsIgnoreCase(p.trangThai, 'đã đặt')}">
+                                                <span class="badge bg-warning text-dark px-3 py-2">
+                                                    <i class="bi bi-calendar-check me-1"></i> Đã đặt
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${fn:containsIgnoreCase(p.trangThai, 'bảo trì')}">
+                                                <span class="badge bg-danger px-3 py-2">
+                                                    <i class="bi bi-tools me-1"></i> Bảo trì
+                                                </span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="badge bg-secondary px-3 py-2">
+                                                    <i class="bi bi-question-circle me-1"></i> ${p.trangThai}
+                                                </span>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </td>
+
                                     <td>
                                         <a class="btn btn-sm btn-primary" href="QL-CTPhong?action=view&id=${p.maPhong}">
                                             <i class="bi bi-eye"></i>
@@ -84,7 +106,31 @@
                             </c:forEach>
                         </tbody>
                     </table>
-                </div>
+                    <!-- ======= PHÂN TRANG ======= -->
+                    <div class="mt-4 d-flex flex-column align-items-center">
+                        <div class="text-muted mb-2">
+                            Trang ${currentPage} / ${totalPages} — Tổng <strong>${totalItems}</strong> phòng
+                        </div>
+
+                        <nav>
+                            <ul class="pagination justify-content-center mb-0">
+                                <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                                    <a class="page-link" href="${pageContext.request.contextPath}/QL-Phong?action=list&page=${currentPage-1}&size=${pageSize}">&laquo;</a>
+                                </li>
+
+                                <c:forEach begin="1" end="${totalPages}" var="i">
+                                    <li class="page-item ${i == currentPage ? 'active' : ''}">
+                                        <a class="page-link" href="${pageContext.request.contextPath}/QL-Phong?action=list&page=${i}&size=${pageSize}">${i}</a>
+                                    </li>
+                                </c:forEach>
+
+                                <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
+                                    <a class="page-link" href="${pageContext.request.contextPath}/QL-Phong?action=list&page=${currentPage+1}&size=${pageSize}">&raquo;</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>             
             </div>
         </div>
 
@@ -232,19 +278,19 @@
                     $('#editMoTa').val(mota);
                     $('#editTrangThai').val(trangthai);
 
-                 
+
                     var modal = new bootstrap.Modal(document.getElementById('modalSuaPhong'));
                     modal.show();
                 });
 
-              
+
                 $('#formEditPhong').submit(function (e) {
                     e.preventDefault();
 
-                
-                    const formData = $(this).serialize(); 
 
-                    
+                    const formData = $(this).serialize();
+
+
                     $('#btnSaveEdit').prop('disabled', true);
 
                     $.ajax({
