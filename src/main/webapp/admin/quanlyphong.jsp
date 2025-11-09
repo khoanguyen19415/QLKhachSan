@@ -107,6 +107,12 @@
                         </tbody>
                     </table>
                     <!-- ======= PHÂN TRANG ======= -->
+                    <%
+                        int start = Math.max(1, (Integer) request.getAttribute("currentPage") - 2);
+                        int end = Math.min((Integer) request.getAttribute("totalPages"), (Integer) request.getAttribute("currentPage") + 2);
+                        String ctx = request.getContextPath();
+                    %>
+
                     <div class="mt-4 d-flex flex-column align-items-center">
                         <div class="text-muted mb-2">
                             Trang ${currentPage} / ${totalPages} — Tổng <strong>${totalItems}</strong> phòng
@@ -114,18 +120,35 @@
 
                         <nav>
                             <ul class="pagination justify-content-center mb-0">
+
+                                <!-- Nút Trước -->
                                 <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                                    <a class="page-link" href="${pageContext.request.contextPath}/QL-Phong?action=list&page=${currentPage-1}&size=${pageSize}">&laquo;</a>
+                                    <a class="page-link" href="<%=ctx%>/QL-Phong?action=list&page=${currentPage-1}&size=${pageSize}">&laquo;</a>
                                 </li>
 
-                                <c:forEach begin="1" end="${totalPages}" var="i">
-                                    <li class="page-item ${i == currentPage ? 'active' : ''}">
-                                        <a class="page-link" href="${pageContext.request.contextPath}/QL-Phong?action=list&page=${i}&size=${pageSize}">${i}</a>
-                                    </li>
-                                </c:forEach>
+                                <% if (start > 1) {%>
+                                <li class="page-item"><a class="page-link" href="<%=ctx%>/QL-Phong?action=list&page=1&size=${pageSize}">1</a></li>
+                                    <% if (start > 2) { %>
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    <% } %>
+                                    <% } %>
 
+                                <% for (int i = start; i <= end; i++) {%>
+                                <li class="page-item <%= (i == (Integer) request.getAttribute("currentPage") ? "active" : "")%>">
+                                    <a class="page-link" href="<%=ctx%>/QL-Phong?action=list&page=<%=i%>&size=${pageSize}"><%=i%></a>
+                                </li>
+                                <% } %>
+
+                                <% if (end < (Integer) request.getAttribute("totalPages")) { %>
+                                <% if (end < (Integer) request.getAttribute("totalPages") - 1) { %>
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    <% }%>
+                                <li class="page-item"><a class="page-link" href="<%=ctx%>/QL-Phong?action=list&page=${totalPages}&size=${pageSize}">${totalPages}</a></li>
+                                    <% }%>
+
+                                <!-- Nút Sau -->
                                 <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-                                    <a class="page-link" href="${pageContext.request.contextPath}/QL-Phong?action=list&page=${currentPage+1}&size=${pageSize}">&raquo;</a>
+                                    <a class="page-link" href="<%=ctx%>/QL-Phong?action=list&page=${currentPage+1}&size=${pageSize}">&raquo;</a>
                                 </li>
                             </ul>
                         </nav>

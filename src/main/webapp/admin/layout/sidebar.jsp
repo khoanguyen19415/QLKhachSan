@@ -26,10 +26,4 @@
     <a href="#" class="nav-link">
         <i class="bi bi-gear me-2"></i> Cấu hình hệ thống
     </a>
-
-    <hr class="my-3">
-
-    <a href="#" class="nav-link text-danger">
-        <i class="bi bi-box-arrow-right me-2"></i> Đăng xuất
-    </a>
 </div>

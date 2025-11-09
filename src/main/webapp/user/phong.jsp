@@ -77,23 +77,50 @@
 
                 <nav aria-label="Page navigation">
                     <ul class="pagination justify-content-center mb-0">
-                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                            <a class="page-link" href="${pageContext.request.contextPath}/phong?page=${currentPage-1}&size=${pageSize}" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
+                        <%
+                            int currentPage = (int) request.getAttribute("currentPage");
+                            int totalPages = (int) request.getAttribute("totalPages");
+                            int pageSize = (int) request.getAttribute("pageSize");
+                            String ctx = request.getContextPath();
+
+                            int start = Math.max(1, currentPage - 2);
+                            int end = Math.min(totalPages, currentPage + 2);
+                        %>
+
+                        <!-- Trang đầu -->
+                        <li class="page-item <%= (currentPage == 1 ? "disabled" : "")%>">
+                            <a class="page-link" href="<%= ctx%>/phong?page=<%= currentPage - 1%>&size=<%= pageSize%>">&laquo;</a>
                         </li>
 
-                        <c:forEach begin="1" end="${totalPages}" var="i">
-                            <li class="page-item ${i == currentPage ? 'active' : ''}">
-                                <a class="page-link" href="${pageContext.request.contextPath}/phong?page=${i}&size=${pageSize}">${i}</a>
-                            </li>
-                        </c:forEach>
+                        <!-- Trang 1 -->
+                        <% if (start > 1) {%>
+                        <li class="page-item"><a class="page-link" href="<%= ctx%>/phong?page=1&size=<%= pageSize%>">1</a></li>
+                            <% if (start > 2) { %>
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                            <% } %>
+                            <% } %>
 
-                        <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-                            <a class="page-link" href="${pageContext.request.contextPath}/phong?page=${currentPage+1}&size=${pageSize}" aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
+                        <!-- Vòng lặp chính -->
+                        <% for (int i = start; i <= end; i++) {%>
+                        <li class="page-item <%= (i == currentPage ? "active" : "")%>">
+                            <a class="page-link" href="<%= ctx%>/phong?page=<%= i%>&size=<%= pageSize%>"><%= i%></a>
                         </li>
+                        <% } %>
+
+                        <!-- Trang cuối -->
+                        <% if (end < totalPages) { %>
+                        <% if (end < totalPages - 1) { %>
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                            <% }%>
+                        <li class="page-item"><a class="page-link" href="<%= ctx%>/phong?page=<%= totalPages%>&size=<%= pageSize%>"><%= totalPages%></a></li>
+                            <% }%>
+
+                        <!-- Trang kế tiếp -->
+                        <li class="page-item <%= (currentPage == totalPages ? "disabled" : "")%>">
+                            <a class="page-link" href="<%= ctx%>/phong?page=<%= currentPage + 1%>&size=<%= pageSize%>">&raquo;</a>
+                        </li>
+
+                        
                     </ul>
                 </nav>
             </div>

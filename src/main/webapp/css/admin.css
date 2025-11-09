@@ -548,3 +548,134 @@ table.table th {
     .stats-row .card .icon { width: 56px; height: 56px; font-size: 24px; }
     .stat-number { font-size: 22px; }
 }
+
+
+/* ===================== DASHBOARD / THỐNG KÊ ===================== */
+
+/* Tổng thể */
+.dashboard-container {
+    background-color: #f8f9fa;
+    padding: 30px;
+}
+
+/* Tiêu đề chính */
+.dashboard-container h3 {
+    color: #0d6efd;
+    font-weight: 700;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Cards thống kê nhanh (4 ô trên cùng) */
+.stat-card {
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    color: #fff;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+}
+.stat-card h4 {
+    font-size: 1rem;
+    margin-top: 10px;
+    font-weight: 600;
+}
+.stat-card .value {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* Màu sắc tương ứng */
+.stat-primary   { background: linear-gradient(135deg, #0d6efd, #2563eb); }
+.stat-success   { background: linear-gradient(135deg, #198754, #28a745); }
+.stat-warning   { background: linear-gradient(135deg, #ffc107, #f7b500); }
+.stat-danger    { background: linear-gradient(135deg, #dc3545, #c82333); }
+
+/* Khung biểu đồ */
+.chart-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    margin-bottom: 30px;
+}
+.chart-card h5 {
+    color: #0d6efd;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .dashboard-container { padding: 20px; }
+    .stat-card .value { font-size: 1.5rem; }
+}
+@media (max-width: 768px) {
+    .stat-card { padding: 16px; margin-bottom: 14px; }
+    .chart-card { padding: 18px; }
+}
+
+#chartLoaiPhong {
+    max-width: 1050px;
+    max-height: 350px;
+    margin: 0 auto;
+    display: block;
+}
+
+
+.row.g-4.mb-4 > .col-md-3 {
+    display: flex;
+    align-items: stretch;  
+}
+
+.row.g-4.mb-4 .card {
+    flex: 1;
+    border-radius: 14px;
+    min-height: 180px;     
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 18px 12px;
+    box-sizing: border-box;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.row.g-4.mb-4 .card i {
+    font-size: 2.1rem;
+    margin-bottom: 10px;
+}
+
+.row.g-4.mb-4 .card h4 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.row.g-4.mb-4 .card .value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+
+.bg-primary { background-color: #0d6efd !important; }
+.bg-success { background-color: #198754 !important; }
+.bg-warning { background-color: #f6b70a !important; color: #fff !important; }
+.bg-danger  { background-color: #dc3545 !important; color: #fff !important; }
+
+
+.row.g-4.mb-4 .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
