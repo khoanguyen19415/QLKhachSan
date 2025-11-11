@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import model.ChiTietDatPhong;
 import model.DatPhong;
 import model.DatPhongDAO;
 import model.KhachHang;
@@ -173,6 +174,7 @@ public class DatPhongsServlet extends HttpServlet {
 
             if (maPhongStr == null || ngayNhanStr == null || ngayTraStr == null) {
                 request.setAttribute("error", "Dữ liệu đặt phòng thiếu");
+                request.setAttribute("maPhong", maPhongStr);
                 showForm(request, response);
                 return;
             }
@@ -180,46 +182,90 @@ public class DatPhongsServlet extends HttpServlet {
             int maPhong = Integer.parseInt(maPhongStr);
             int maKH = kh.getMaKH();
 
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            Date utilNgayNhan = sdf.parse(ngayNhanStr);
-            Date utilNgayTra = sdf.parse(ngayTraStr);
+            // ✅ Dùng LocalDate để kiểm tra ngày chính xác
+            java.time.LocalDate ngayNhan = java.time.LocalDate.parse(ngayNhanStr);
+            java.time.LocalDate ngayTra = java.time.LocalDate.parse(ngayTraStr);
+            java.time.LocalDate homNay = java.time.LocalDate.now();
 
-            Phong p = phongDAO.getById(maPhong);
-            if (p == null) {
-                request.setAttribute("error", "Không tìm thấy phòng");
+// 🚫 1. Kiểm tra ngày nhận không được ở quá khứ
+            if (ngayNhan.isBefore(homNay)) {
+                request.setAttribute("error", "Ngày nhận phải từ hôm nay trở đi!");
+                request.setAttribute("maPhong", maPhong);
+                request.setAttribute("ngayNhan", ngayNhanStr);
+                request.setAttribute("ngayTra", ngayTraStr);
                 showForm(request, response);
                 return;
             }
 
-            // Kiểm tra phòng có sẵn
+// 🚫 2. Kiểm tra ngày trả >= ngày nhận
+            if (ngayTra.isBefore(ngayNhan)) {
+                request.setAttribute("error", "Ngày trả phải lớn hơn hoặc bằng ngày nhận!");
+                request.setAttribute("maPhong", maPhong);
+                request.setAttribute("ngayNhan", ngayNhanStr);
+                request.setAttribute("ngayTra", ngayTraStr);
+                showForm(request, response);
+                return;
+            }
+
+            Phong p = phongDAO.getById(maPhong);
+            if (p == null) {
+                request.setAttribute("error", "Không tìm thấy phòng");
+                request.setAttribute("maPhong", maPhong);
+                showForm(request, response);
+                return;
+            }
+
+            // ✅ Kiểm tra trạng thái phòng (chỉ cho đặt nếu còn trống)
             if (!"Trống".equalsIgnoreCase(p.getTrangThai()) && !"Còn trống".equalsIgnoreCase(p.getTrangThai())) {
-                request.setAttribute("error", "Phòng hiện không còn trống, không thể đặt");
+                request.setAttribute("error", "Phòng hiện không còn trống, không thể đặt!");
                 request.setAttribute("phong", p);
                 request.setAttribute("isAvailable", false);
+                request.setAttribute("ngayNhan", ngayNhanStr);
+                request.setAttribute("ngayTra", ngayTraStr);
                 request.getRequestDispatcher("/user/datphong.jsp").forward(request, response);
                 return;
             }
 
-            // ✅ Tạo đơn đặt phòng
-            DatPhong dp = new DatPhong();
-            dp.setMaKH(maKH);
-            dp.setMaPhong(maPhong);
-            dp.setTenPhong(p.getTenPhong()); // ✅ Lưu tên phòng vào DatPhong
-            dp.setNgayDat(new Date());
-            dp.setNgayNhan(new java.sql.Date(utilNgayNhan.getTime()));
-            dp.setNgayTra(new java.sql.Date(utilNgayTra.getTime()));
-            dp.setTrangThai("Chờ xác nhận");
+            // ✅ Kiểm tra xem khách đã có đơn đặt cùng ngày chưa
+            DatPhong existing = dpDAO.findExistingBooking(maKH,
+                    java.sql.Date.valueOf(ngayNhan),
+                    java.sql.Date.valueOf(ngayTra));
 
-            boolean okInsert = dpDAO.insert(dp);
+            boolean okInsert = false;
+
+            if (existing != null) {
+                // 🔁 Đơn đã tồn tại → chỉ thêm phòng mới vào ChiTietDatPhong
+                ChiTietDatPhong ctdp = new ChiTietDatPhong();
+                ctdp.setMaDatPhong(existing.getMaDatPhong());
+                ctdp.setMaPhong(maPhong);
+                ctdp.setGia(p.getGia());
+                ctdp.setGhiChu("Thêm phòng vào đơn hiện có");
+                ctdp.setTrangThai("Chờ duyệt");
+
+                okInsert = dpDAO.insertChiTiet(ctdp); // bạn cần có hàm này trong DatPhongDAO
+            } else {
+                // 🆕 Tạo đơn mới nếu chưa có
+                DatPhong dp = new DatPhong();
+                dp.setMaKH(maKH);
+                dp.setNgayDat(new java.util.Date());
+                dp.setNgayNhan(java.sql.Date.valueOf(ngayNhan));
+                dp.setNgayTra(java.sql.Date.valueOf(ngayTra));
+                dp.setTrangThai("Chờ duyệt");
+
+                ChiTietDatPhong ctdp = new ChiTietDatPhong();
+                ctdp.setMaPhong(maPhong);
+                ctdp.setGia(p.getGia());
+                ctdp.setGhiChu("Đặt qua website");
+                dp.setChiTiet(List.of(ctdp));
+
+                okInsert = dpDAO.insert(dp);
+            }
 
             if (okInsert) {
-                phongDAO.updateStatus(maPhong, "Đã đặt");
                 request.setAttribute("success", "Đặt phòng thành công! Đơn của bạn đang chờ xác nhận.");
             } else {
                 request.setAttribute("error", "Đặt phòng thất bại, vui lòng thử lại sau.");
             }
-            request.setAttribute("ngayNhan", ngayNhanStr);
-            request.setAttribute("ngayTra", ngayTraStr);
 
             showForm(request, response);
 

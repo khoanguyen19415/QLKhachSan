@@ -91,15 +91,18 @@
                                 <c:choose>
                                     <c:when test="${isAvailable && not empty sessionScope.kh}">
                                         <button type="submit" class="btn btn-primary px-4">Xác nhận đặt phòng</button>
+                                        <div class="mt-3 text-center">
+                                            <a href="${pageContext.request.contextPath}/phong" class="btn btn-outline-secondary">Quay lại danh sách</a>
+                                        </div>
                                     </c:when>
                                     <c:otherwise>
                                         <button type="button" class="btn btn-secondary px-4" disabled>
                                             Không thể đặt phòng
-                                        </button>
+                                        </button>         
                                         <div class="mt-3 text-center">
                                             <a href="${pageContext.request.contextPath}/phong" class="btn btn-outline-secondary">Quay lại danh sách</a>
                                         </div>
-                                    </c:otherwise>
+                                    </c:otherwise>                                     
                                 </c:choose>
                             </div>
                         </form>

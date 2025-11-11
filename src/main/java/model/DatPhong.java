@@ -1,33 +1,25 @@
 package model;
 
 import java.util.Date;
+import java.util.List;
 
 public class DatPhong {
 
     private int maDatPhong;
     private int maKH;
-    private int maPhong;
-    private String tenPhong; // ✅ thêm thuộc tính tên phòng
     private Date ngayDat;
     private Date ngayNhan;
     private Date ngayTra;
+    private Double tongTien; // có thể null
     private String trangThai;
+    private List<ChiTietDatPhong> chiTiet; // danh sách phòng trong đơn
+
+    private String tenPhong;
 
     public DatPhong() {
     }
 
-    public DatPhong(int maDatPhong, int maKH, int maPhong, String tenPhong, Date ngayDat, Date ngayNhan, Date ngayTra, String trangThai) {
-        this.maDatPhong = maDatPhong;
-        this.maKH = maKH;
-        this.maPhong = maPhong;
-        this.tenPhong = tenPhong;
-        this.ngayDat = ngayDat;
-        this.ngayNhan = ngayNhan;
-        this.ngayTra = ngayTra;
-        this.trangThai = trangThai;
-    }
-
-    // --- Getter/Setter ---
+    // getters / setters
     public int getMaDatPhong() {
         return maDatPhong;
     }
@@ -42,22 +34,6 @@ public class DatPhong {
 
     public void setMaKH(int maKH) {
         this.maKH = maKH;
-    }
-
-    public int getMaPhong() {
-        return maPhong;
-    }
-
-    public void setMaPhong(int maPhong) {
-        this.maPhong = maPhong;
-    }
-
-    public String getTenPhong() {
-        return tenPhong;
-    }
-
-    public void setTenPhong(String tenPhong) {
-        this.tenPhong = tenPhong;
     }
 
     public Date getNgayDat() {
@@ -84,11 +60,35 @@ public class DatPhong {
         this.ngayTra = ngayTra;
     }
 
+    public Double getTongTien() {
+        return tongTien;
+    }
+
+    public void setTongTien(Double tongTien) {
+        this.tongTien = tongTien;
+    }
+
     public String getTrangThai() {
         return trangThai;
     }
 
     public void setTrangThai(String trangThai) {
         this.trangThai = trangThai;
+    }
+
+    public List<ChiTietDatPhong> getChiTiet() {
+        return chiTiet;
+    }
+
+    public void setChiTiet(List<ChiTietDatPhong> chiTiet) {
+        this.chiTiet = chiTiet;
+    }
+
+    public String getTenPhong() {
+        return tenPhong;
+    }
+
+    public void setTenPhong(String tenPhong) {
+        this.tenPhong = tenPhong;
     }
 }

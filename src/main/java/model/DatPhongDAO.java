@@ -1,27 +1,33 @@
 package model;
 
-import java.sql.*;
-import java.util.*;
 import util.DBConnection;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatPhongDAO {
 
-    // Lấy tất cả đơn đặt (đơn giản, bạn có thể thêm join lấy tên khách/phòng nếu muốn)
     public List<DatPhong> getAll() {
         List<DatPhong> list = new ArrayList<>();
-        String sql = "SELECT MaDatPhong, MaKH, MaPhong, TenPhong, NgayDat, NgayNhan, NgayTra, TrangThai FROM DatPhong ORDER BY MaDatPhong DESC";
+        String sql = "SELECT dp.MaDatPhong, dp.MaKH, dp.NgayDat, dp.NgayNhan, dp.NgayTra, dp.TrangThai, "
+                + "STRING_AGG(p.TenPhong, ', ') AS TenPhong "
+                + "FROM DatPhong dp "
+                + "LEFT JOIN ChiTietDatPhong ctdp ON dp.MaDatPhong = ctdp.MaDatPhong "
+                + "LEFT JOIN Phong p ON ctdp.MaPhong = p.MaPhong "
+                + "GROUP BY dp.MaDatPhong, dp.MaKH, dp.NgayDat, dp.NgayNhan, dp.NgayTra, dp.TrangThai "
+                + "ORDER BY dp.MaDatPhong ASC";
+
         try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 DatPhong dp = new DatPhong();
                 dp.setMaDatPhong(rs.getInt("MaDatPhong"));
                 dp.setMaKH(rs.getInt("MaKH"));
-                dp.setMaPhong(rs.getInt("MaPhong"));
-                dp.setTenPhong(rs.getString("TenPhong"));
                 dp.setNgayDat(rs.getDate("NgayDat"));
                 dp.setNgayNhan(rs.getDate("NgayNhan"));
                 dp.setNgayTra(rs.getDate("NgayTra"));
                 dp.setTrangThai(rs.getString("TrangThai"));
+                dp.setTenPhong(rs.getString("TenPhong"));
                 list.add(dp);
             }
 
@@ -31,169 +37,54 @@ public class DatPhongDAO {
         return list;
     }
 
-    // Cập nhật trạng thái theo MaDatPhong
-    public boolean updateStatus(int maDatPhong, String trangThai) {
-        String sql = "UPDATE DatPhong SET TrangThai = ? WHERE MaDatPhong = ?";
-        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, trangThai);
-            ps.setInt(2, maDatPhong);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            return false;
-        }
-    }
-
-    // Tùy chọn: lấy 1 đơn theo id
     public DatPhong getById(int maDatPhong) {
-        String sql = "SELECT MaDatPhong, MaKH, MaPhong, NgayDat, NgayNhan, NgayTra, TrangThai FROM DatPhong WHERE MaDatPhong = ?";
+        String sql = "SELECT dp.MaDatPhong, dp.MaKH, dp.NgayDat, dp.NgayNhan, dp.NgayTra, dp.TrangThai, "
+                + "STRING_AGG(p.TenPhong, ', ') AS TenPhong "
+                + "FROM DatPhong dp "
+                + "LEFT JOIN ChiTietDatPhong ctdp ON dp.MaDatPhong = ctdp.MaDatPhong "
+                + "LEFT JOIN Phong p ON ctdp.MaPhong = p.MaPhong "
+                + "WHERE dp.MaDatPhong = ? "
+                + "GROUP BY dp.MaDatPhong, dp.MaKH, dp.NgayDat, dp.NgayNhan, dp.NgayTra, dp.TrangThai";
+
         try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, maDatPhong);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    DatPhong dp = new DatPhong();
-                    dp.setMaDatPhong(rs.getInt("MaDatPhong"));
-                    dp.setMaKH(rs.getInt("MaKH"));
-                    dp.setMaPhong(rs.getInt("MaPhong"));
-                    dp.setNgayDat(rs.getDate("NgayDat"));
-                    dp.setNgayNhan(rs.getDate("NgayNhan"));
-                    dp.setNgayTra(rs.getDate("NgayTra"));
-                    dp.setTrangThai(rs.getString("TrangThai"));
-                    return dp;
-                }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                DatPhong dp = new DatPhong();
+                dp.setMaDatPhong(rs.getInt("MaDatPhong"));
+                dp.setMaKH(rs.getInt("MaKH"));
+                dp.setNgayDat(rs.getDate("NgayDat"));
+                dp.setNgayNhan(rs.getDate("NgayNhan"));
+                dp.setNgayTra(rs.getDate("NgayTra"));
+                dp.setTrangThai(rs.getString("TrangThai"));
+                dp.setTenPhong(rs.getString("TenPhong"));
+                dp.setChiTiet(new ChiTietDatPhongDAO().getByDatPhong(dp.getMaDatPhong()));
+                return dp;
             }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return null;
     }
 
-    public int countAllBookings() {
-        String sql = "SELECT COUNT(*) AS cnt FROM DatPhong";
-        try (Connection conn = DBConnection.getConnection(); Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
-            if (rs.next()) {
-                return rs.getInt("cnt");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    public int countCheckedIn() {
-        String sql = "SELECT COUNT(*) AS cnt FROM DatPhong WHERE TrangThai LIKE N'%nhận%' OR TrangThai LIKE N'%Nhận%'";
-        try (Connection conn = DBConnection.getConnection(); Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
-            if (rs.next()) {
-                return rs.getInt("cnt");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    public int countCancelled() {
-        String sql = "SELECT COUNT(*) AS cnt FROM DatPhong WHERE TrangThai LIKE N'%Hủy%' OR TrangThai LIKE N'%hủy%'";
-        try (Connection conn = DBConnection.getConnection(); Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
-            if (rs.next()) {
-                return rs.getInt("cnt");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    public List<DatPhong> search(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return getAll();
-        }
-        List<DatPhong> list = new ArrayList<>();
-        String k = keyword.trim();
-        // thử parse thành số
-        try (Connection conn = DBConnection.getConnection()) {
-            try {
-                int id = Integer.parseInt(k);
-                String sql = "SELECT MaDatPhong, MaKH, MaPhong, TenPhong, NgayDat, NgayNhan, NgayTra, TrangThai FROM DatPhong WHERE MaDatPhong = ? OR MaKH = ? OR MaPhong = ? ORDER BY MaDatPhong DESC ";
-                try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                    ps.setInt(1, id);
-                    ps.setInt(2, id);
-                    ps.setInt(3, id);
-                    ResultSet rs = ps.executeQuery();
-                    while (rs.next()) {
-                        DatPhong dp = new DatPhong(
-                                rs.getInt("MaDatPhong"),
-                                rs.getInt("MaKH"),
-                                rs.getInt("MaPhong"),
-                                rs.getString("TenPhong"),
-                                rs.getDate("NgayDat"),
-                                rs.getDate("NgayNhan"),
-                                rs.getDate("NgayTra"),
-                                rs.getString("TrangThai")
-                        );
-                        list.add(dp);
-                    }
-                }
-            } catch (NumberFormatException ex) {
-                // nếu không phải số, tìm theo chuỗi trong trạng thái (ví dụ)
-                String sql = "SELECT MaDatPhong, MaKH, MaPhong, TenPhong,NgayDat, NgayNhan, NgayTra, TrangThai FROM DatPhong WHERE TrangThai LIKE ? ORDER BY MaDatPhong DESC";
-                try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                    ps.setString(1, "%" + k + "%");
-                    ResultSet rs = ps.executeQuery();
-                    while (rs.next()) {
-                        DatPhong dp = new DatPhong(
-                                rs.getInt("MaDatPhong"),
-                                rs.getInt("MaKH"),
-                                rs.getInt("MaPhong"),
-                                rs.getString("TenPhong"),
-                                rs.getDate("NgayDat"),
-                                rs.getDate("NgayNhan"),
-                                rs.getDate("NgayTra"),
-                                rs.getString("TrangThai")
-                        );
-                        list.add(dp);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
     public boolean insert(DatPhong dp) {
-        String sql = "INSERT INTO DatPhong (MaKH, MaPhong, TenPhong, NgayDat, NgayNhan, NgayTra, TrangThai) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO DatPhong (MaKH, NgayDat, NgayNhan, NgayTra, TongTien, TrangThai) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            // 1️⃣ - 3️⃣ : Các thông tin chính
             ps.setInt(1, dp.getMaKH());
-            ps.setInt(2, dp.getMaPhong());
-            ps.setString(3, dp.getTenPhong());
-
-            // 4️⃣ - 6️⃣ : Ngày đặt, nhận, trả
-            java.util.Date udNgayDat = dp.getNgayDat();
-            java.util.Date udNgayNhan = dp.getNgayNhan();
-            java.util.Date udNgayTra = dp.getNgayTra();
-
-            java.sql.Date sqlNgayDat = (udNgayDat == null) ? null : new java.sql.Date(udNgayDat.getTime());
-            java.sql.Date sqlNgayNhan = (udNgayNhan == null) ? null : new java.sql.Date(udNgayNhan.getTime());
-            java.sql.Date sqlNgayTra = (udNgayTra == null) ? null : new java.sql.Date(udNgayTra.getTime());
-
-            ps.setDate(4, sqlNgayDat);
-            ps.setDate(5, sqlNgayNhan);
-            ps.setDate(6, sqlNgayTra);
-
-            // 7️⃣ : Trạng thái
-            ps.setString(7, dp.getTrangThai() == null ? "Chờ xác nhận" : dp.getTrangThai());
+            ps.setDate(2, new java.sql.Date(dp.getNgayDat().getTime()));
+            ps.setDate(3, new java.sql.Date(dp.getNgayNhan().getTime()));
+            ps.setDate(4, new java.sql.Date(dp.getNgayTra().getTime()));
+            ps.setObject(5, dp.getTongTien());
+            ps.setString(6, dp.getTrangThai());
 
             int rows = ps.executeUpdate();
-
             if (rows > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
                     if (rs.next()) {
-                        dp.setMaDatPhong(rs.getInt(1));
+                        int id = rs.getInt(1);
+                        dp.setMaDatPhong(id);
+                        new ChiTietDatPhongDAO().insertList(id, dp.getChiTiet());
                     }
                 }
                 return true;
@@ -205,78 +96,144 @@ public class DatPhongDAO {
         return false;
     }
 
-    public List<DatPhong> getByKhachHang(int maKH) {
+    // ✅ CHỖ QUAN TRỌNG NHẤT — CẬP NHẬT ĐỒNG BỘ ĐƠN VÀ CHI TIẾT
+    public boolean updateStatus(int maDatPhong, String trangThai) {
+        String sqlDatPhong = "UPDATE DatPhong SET TrangThai = ? WHERE MaDatPhong = ?";
+        String sqlChiTiet = "UPDATE ChiTietDatPhong SET TrangThai = ? WHERE MaDatPhong = ?";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement ps1 = conn.prepareStatement(sqlDatPhong); PreparedStatement ps2 = conn.prepareStatement(sqlChiTiet)) {
+
+                // Cập nhật đơn chính
+                ps1.setString(1, trangThai);
+                ps1.setInt(2, maDatPhong);
+                ps1.executeUpdate();
+
+                // Cập nhật tất cả chi tiết thuộc đơn
+                ps2.setString(1, trangThai);
+                ps2.setInt(2, maDatPhong);
+                ps2.executeUpdate();
+
+                conn.commit();
+                return true;
+            } catch (Exception e) {
+                conn.rollback();
+                e.printStackTrace();
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public int countAll() {
+        String sql = "SELECT COUNT(*) FROM DatPhong";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public List<DatPhong> getPaged(int offset, int limit) {
         List<DatPhong> list = new ArrayList<>();
-        String sql = "SELECT MaDatPhong, MaKH, MaPhong, TenPhong, NgayDat, NgayNhan, NgayTra, TrangThai "
-                + "FROM DatPhong "
-                + "WHERE MaKH = ? "
-                + "ORDER BY MaDatPhong DESC";
+        String sql = "SELECT dp.MaDatPhong, dp.MaKH, dp.NgayNhan, dp.NgayTra, dp.TrangThai, "
+                + "STRING_AGG(p.TenPhong, ', ') AS TenPhong "
+                + "FROM DatPhong dp "
+                + "LEFT JOIN ChiTietDatPhong ctdp ON dp.MaDatPhong = ctdp.MaDatPhong "
+                + "LEFT JOIN Phong p ON ctdp.MaPhong = p.MaPhong "
+                + "GROUP BY dp.MaDatPhong, dp.MaKH, dp.NgayNhan, dp.NgayTra, dp.TrangThai "
+                + "ORDER BY dp.MaDatPhong DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-
-            ps.setInt(1, maKH);
+            ps.setInt(1, offset);
+            ps.setInt(2, limit);
             ResultSet rs = ps.executeQuery();
-
             while (rs.next()) {
                 DatPhong dp = new DatPhong();
                 dp.setMaDatPhong(rs.getInt("MaDatPhong"));
                 dp.setMaKH(rs.getInt("MaKH"));
-                dp.setMaPhong(rs.getInt("MaPhong"));
-                dp.setTenPhong(rs.getString("TenPhong"));
-                dp.setNgayDat(rs.getDate("NgayDat"));
                 dp.setNgayNhan(rs.getDate("NgayNhan"));
                 dp.setNgayTra(rs.getDate("NgayTra"));
                 dp.setTrangThai(rs.getString("TrangThai"));
+                dp.setTenPhong(rs.getString("TenPhong"));
+                dp.setChiTiet(new ChiTietDatPhongDAO().getByDatPhong(dp.getMaDatPhong()));
                 list.add(dp);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 
+    public List<DatPhong> getByKhachHang(int maKH) {
+        List<DatPhong> list = new ArrayList<>();
+        String sql = "SELECT * FROM DatPhong WHERE MaKH = ? ORDER BY MaDatPhong DESC";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, maKH);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                DatPhong dp = new DatPhong();
+                dp.setMaDatPhong(rs.getInt("MaDatPhong"));
+                dp.setMaKH(rs.getInt("MaKH"));
+                dp.setNgayDat(rs.getDate("NgayDat"));
+                dp.setNgayNhan(rs.getDate("NgayNhan"));
+                dp.setNgayTra(rs.getDate("NgayTra"));
+                dp.setTongTien(rs.getDouble("TongTien"));
+                dp.setTrangThai(rs.getString("TrangThai"));
+                dp.setTenPhong(rs.getString("TenPhong"));
+                dp.setChiTiet(new ChiTietDatPhongDAO().getByDatPhong(dp.getMaDatPhong()));
+                list.add(dp);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return list;
     }
-    
-    
-    public int countAll() {
-    String sql = "SELECT COUNT(*) FROM DatPhong";
-    try (Connection conn = DBConnection.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql);
-         ResultSet rs = ps.executeQuery()) {
-        if (rs.next()) return rs.getInt(1);
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-    return 0;
-}
 
-public List<DatPhong> getPaged(int offset, int limit) {
-    List<DatPhong> list = new ArrayList<>();
-    String sql = "SELECT dp.*, p.TenPhong FROM DatPhong dp "
-               + "LEFT JOIN Phong p ON dp.MaPhong = p.MaPhong "
-               + "ORDER BY dp.MaDatPhong ASC "
-               + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-
-    try (Connection conn = DBConnection.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
-        ps.setInt(1, offset);
-        ps.setInt(2, limit);
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                DatPhong dp = new DatPhong();
+    // 🔍 Tìm đơn đặt phòng hiện có của khách cùng ngày nhận & ngày trả
+    public DatPhong findExistingBooking(int maKH, Date ngayNhan, Date ngayTra) {
+        DatPhong dp = null;
+        String sql = "SELECT * FROM DatPhong WHERE MaKH = ? AND NgayNhan = ? AND NgayTra = ? AND TrangThai IN (N'Chờ duyệt', N'Đã duyệt', N'Đang ở')";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, maKH);
+            ps.setDate(2, new java.sql.Date(ngayNhan.getTime()));
+            ps.setDate(3, new java.sql.Date(ngayTra.getTime()));
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                dp = new DatPhong();
                 dp.setMaDatPhong(rs.getInt("MaDatPhong"));
                 dp.setMaKH(rs.getInt("MaKH"));
-                dp.setMaPhong(rs.getInt("MaPhong"));
-                dp.setTenPhong(rs.getString("TenPhong"));
                 dp.setNgayNhan(rs.getDate("NgayNhan"));
                 dp.setNgayTra(rs.getDate("NgayTra"));
                 dp.setTrangThai(rs.getString("TrangThai"));
-                list.add(dp);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    } catch (Exception e) {
-        e.printStackTrace();
+        return dp;
     }
-    return list;
-}
+
+    public boolean insertChiTiet(ChiTietDatPhong ctdp) {
+        String sql = "INSERT INTO ChiTietDatPhong (MaDatPhong, MaPhong, Gia, GhiChu, TrangThai) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, ctdp.getMaDatPhong());
+            ps.setInt(2, ctdp.getMaPhong());
+            ps.setBigDecimal(3, java.math.BigDecimal.valueOf(ctdp.getGia()));
+            ps.setString(4, ctdp.getGhiChu());
+            ps.setString(5, ctdp.getTrangThai());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 }

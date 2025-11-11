@@ -1,14 +1,12 @@
-﻿-- ==========================
 -- TẠO DATABASE
--- ==========================
 CREATE DATABASE QLKhachSan;
 GO
 USE QLKhachSan;
 GO
 
--- ==========================
--- BANG TAI KHOAN
--- ==========================
+-- ======================
+-- BẢNG TÀI KHOẢN
+-- ======================
 CREATE TABLE TaiKhoan (
     MaTK INT IDENTITY(1,1) PRIMARY KEY,
     TenDangNhap NVARCHAR(50) UNIQUE NOT NULL,
@@ -17,34 +15,37 @@ CREATE TABLE TaiKhoan (
 );
 GO
 
--- ==========================
--- BANG KHACH HANG
--- ==========================
+-- ======================
+-- BẢNG KHÁCH HÀNG
+-- ======================
 CREATE TABLE KhachHang (
     MaKH INT IDENTITY(1,1) PRIMARY KEY,
     MaTK INT NULL,
     HoTen NVARCHAR(100) NOT NULL,
-    DiaChi NVARCHAR(255) NULL,
-    SoDienThoai NVARCHAR(15) NULL,
-    Email NVARCHAR(100) NULL,
-    FOREIGN KEY (MaTK) REFERENCES TaiKhoan(MaTK)
+    DiaChi NVARCHAR(255),
+    SoDienThoai NVARCHAR(15),
+    Email NVARCHAR(100),
+    FOREIGN KEY (MaTK) REFERENCES TaiKhoan(MaTK) ON DELETE SET NULL
 );
 GO
 
--- ==========================
--- BANG PHONG
--- ==========================
+-- ======================
+-- BẢNG PHÒNG
+-- ======================
 CREATE TABLE Phong (
     MaPhong INT IDENTITY(1,1) PRIMARY KEY,
     TenPhong NVARCHAR(100) NOT NULL,
     LoaiPhong NVARCHAR(50) NOT NULL,
     Gia DECIMAL(18,2) NOT NULL,
     MoTa NVARCHAR(255),
-    TrangThai NVARCHAR(20) DEFAULT N'Trống'
+    TrangThai NVARCHAR(20)
+        
 );
 GO
 
---  BẢNG LƯU ẢNH PHÒNG
+-- ======================
+-- BẢNG ẢNH PHÒNG
+-- ======================
 CREATE TABLE PhongAnh (
     MaAnh INT IDENTITY(1,1) PRIMARY KEY,
     MaPhong INT NOT NULL,
@@ -53,11 +54,11 @@ CREATE TABLE PhongAnh (
 );
 GO
 
--- ==========================
--- BANG CHI TIET PHONG
--- ==========================
+-- ======================
+-- BẢNG CHI TIẾT PHÒNG
+-- ======================
 CREATE TABLE ChiTietPhong (
-    MaCTP INT IDENTITY(1,1) PRIMARY KEY,
+    MaCTP INT IDENTITY	(1,1) PRIMARY KEY,
     MaPhong INT NOT NULL,
     TienNghi NVARCHAR(100) NOT NULL,
     MoTa NVARCHAR(255),
@@ -65,77 +66,90 @@ CREATE TABLE ChiTietPhong (
 );
 GO
 
--- ==========================
--- BANG DAT PHONG
--- ==========================
+-- ======================
+-- BẢNG ĐẶT PHÒNG (ĐƠN CHÍNH)
+-- ======================
 CREATE TABLE DatPhong (
     MaDatPhong INT IDENTITY(1,1) PRIMARY KEY,
     MaKH INT NOT NULL,
-    MaPhong INT NOT NULL,
-    TenPhong NVARCHAR(100) NOT NULL,
-    NgayDat DATE NOT NULL,
+    NgayDat DATETIME DEFAULT GETDATE(),
     NgayNhan DATE NOT NULL,
     NgayTra DATE NOT NULL,
-    TrangThai NVARCHAR(20) DEFAULT N'Chờ xác nhận',
-    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH) ON DELETE CASCADE,
-    FOREIGN KEY (MaPhong) REFERENCES Phong(MaPhong) ON DELETE CASCADE
+    TongTien DECIMAL(18,2) NULL,
+    TrangThai NVARCHAR(20)
+        
+    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
 );
 GO
 
--- ====================================
--- INSERT TAI KHOAN
--- ====================================
+-- ======================
+-- BẢNG CHI TIẾT ĐẶT PHÒNG
+-- ======================
+CREATE TABLE ChiTietDatPhong (
+    MaCTDP INT IDENTITY(1,1) PRIMARY KEY,
+    MaDatPhong INT NOT NULL,
+    MaPhong INT NOT NULL,
+    Gia DECIMAL(18,2) NOT NULL,
+    GhiChu NVARCHAR(255),
+    TrangThai NVARCHAR(20)
+        
+    FOREIGN KEY (MaDatPhong) REFERENCES DatPhong(MaDatPhong) ON DELETE CASCADE,
+    FOREIGN KEY (MaPhong) REFERENCES Phong(MaPhong)
+);
+GO
+
+-- ======================
+-- DỮ LIỆU MẪU
+-- ======================
+
+-- TÀI KHOẢN
 INSERT INTO TaiKhoan (TenDangNhap, MatKhau, ChucVu)
 VALUES 
-(N'admin', N'123456', N'Admin');
+(N'admin', N'123456', N'Admin'),
+(N'kha1', N'123', N'KhachHang'),
+(N'kha2', N'123', N'KhachHang'),
+(N'kha3', N'123', N'KhachHang');
 GO
 
--- ====================================
--- INSERT KHACH HANG
--- ====================================
-INSERT INTO KhachHang (HoTen, DiaChi, SoDienThoai, Email)
+-- KHÁCH HÀNG
+INSERT INTO KhachHang (MaTK, HoTen, DiaChi, SoDienThoai, Email)
 VALUES
-(N'Nguyễn Văn A', N'Hà Nội', '0912345678', 'vana@gmail.com'),
-(N'Trần Thị B',  N'Đà Nẵng', '0905123456', 'thib@gmail.com'),
-(N'Lê Văn C',  N'Hồ Chí Minh', '0988777666', 'vanc@gmail.com'),
-(N'Phạm Thị D',  N'Cần Thơ', '0977555444', 'thid@gmail.com'),
-(N'Hoàng Văn E',  N'Hải Phòng', '0966333222', 'vane@gmail.com');
+(2, N'Nguyễn Văn A', N'Hà Nội', '0912345678', 'vana@gmail.com'),
+(3, N'Trần Thị B', N'Đà Nẵng', '0905123456', 'thib@gmail.com'),
+(4, N'Lê Văn C', N'Hồ Chí Minh', '0988777666', 'vanc@gmail.com');
 GO
 
--- ====================================
--- INSERT PHONG
--- ====================================
+-- PHÒNG
 INSERT INTO Phong (TenPhong, LoaiPhong, Gia, MoTa, TrangThai)
 VALUES
-(N'Phòng Deluxe 101', N'Deluxe', 850000, N'Phòng rộng rãi, có ban công view biển', N'Trống'),
-(N'Phòng Standard 102', N'Standard', 500000, N'Phòng tiêu chuẩn, đầy đủ tiện nghi cơ bản', N'Trống'),
-(N'Phòng Suite 201', N'Suite', 1200000, N'Phòng cao cấp có phòng khách riêng', N'Đã đặt'),
-(N'Phòng VIP 202', N'VIP', 950000, N'Phòng cao cấp có đầy đủ mọi thứ trên đời', N'Trống'),
-(N'Phòng VIP 301', N'VIP', 1800000, N'Phòng cao cấp có bồn tắm và minibar', N'Đã đặt'),
-(N'Phòng VIP 302', N'VIP', 350000, N'Phòng cực cao cấp dành cho đại gia', N'Trống');
+(N'Phòng Standard 101', N'Standard', 500000, N'Tiện nghi cơ bản', N'Trống'),
+(N'Phòng Deluxe 102', N'Deluxe', 850000, N'Ban công view biển', N'Trống'),
+(N'Phòng Suite 201', N'Suite', 1200000, N'Phòng cao cấp có phòng khách riêng', N'Trống'),
+(N'Phòng VIP 301', N'VIP', 1800000, N'Phòng có bồn tắm và minibar', N'Trống'),
+(N'Phòng Presidential 401', N'Presidential Suite', 3500000, N'Phòng tổng thống sang trọng', N'Trống');
 GO
 
--- ====================================
--- INSERT CHI TIET PHONG
--- ====================================
+-- CHI TIẾT PHÒNG
 INSERT INTO ChiTietPhong (MaPhong, TienNghi, MoTa)
 VALUES
-(1, N'Tivi màn hình phẳng', N'Kết nối Netflix, YouTube'),
-(2, N'Bình nước nóng', N'Dung tích 20L'),
-(3, N'Minibar', N'Có sẵn nước ngọt và bia'),
-(4, N'Giường đôi', N'Dành cho 4 người'),
-(5, N'Loa Bluetooth', N'Hệ thống âm thanh cao cấp'),
-(6, N'Wifi miễn phí', N'Tốc độ cao');
+(1, N'Tivi', N'Màn hình phẳng 50 inch'),
+(2, N'Máy lạnh', N'Điều hòa inverter'),
+(3, N'Giường đôi', N'Nệm cao su non'),
+(4, N'Minibar', N'Có bia, nước ngọt miễn phí'),
+(5, N'Bồn tắm', N'Thiết kế cao cấp');
 GO
 
--- ====================================
--- INSERT DAT PHONG
--- ====================================
-INSERT INTO DatPhong (MaKH, MaPhong, TenPhong, NgayDat, NgayNhan, NgayTra, TrangThai)
+-- ĐƠN ĐẶT PHÒNG
+INSERT INTO DatPhong (MaKH, NgayNhan, NgayTra, TongTien, TrangThai)
 VALUES
-(1, 3, N'Phòng Deluxe', '2025-10-10', '2025-10-15', '2025-10-18', N'Chờ xác nhận'),
-(2, 6, N'VIP', '2025-10-12', '2025-10-20', '2025-10-22', N'Chờ xác nhận'),
-(3, 1, N'Phòng VIP', '2025-10-08', '2025-10-10', '2025-10-12', N'Đã trả phòng'),
-(4, 5, N'Phòng Tiêu Chuẩn', '2025-09-28', '2025-09-30', '2025-10-02', N'Đang ở'),
-(5, 4, N'Phòng Deluxe', '2025-10-01', '2025-10-05', '2025-10-08', N'Hủy');
+(1, '2025-11-15', '2025-11-17', NULL, N'Đã duyệt'),
+(2, '2025-11-20', '2025-11-22', NULL, N'Chờ duyệt');
+GO
+
+-- CHI TIẾT ĐẶT PHÒNG (MỖI PHÒNG RIÊNG TRẠNG THÁI)
+INSERT INTO ChiTietDatPhong (MaDatPhong, MaPhong, Gia, GhiChu, TrangThai)
+VALUES
+(1, 1, 500000, N'Phòng đơn', N'Chờ duyệt'),
+(1, 2, 850000, N'Phòng đôi', N'Chờ duyệt'),
+(2, 3, 1200000, N'Yêu cầu thêm giường phụ', N'Chờ duyệt');
 GO

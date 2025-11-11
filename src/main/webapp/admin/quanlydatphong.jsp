@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -9,6 +10,7 @@
         <%@ include file="layout/header.jsp" %>
         <link rel="stylesheet" href="<%= request.getContextPath()%>/css/admin.css">
     </head>
+
     <body>
         <%@ include file="../thongbao.jsp" %>
         <%@ include file="layout/nav.jsp" %>
@@ -25,161 +27,145 @@
                     </h3>
                     <hr>
 
-                    <!-- Thanh tìm kiếm -->
-                    <form class="d-flex justify-content-end mb-3" 
+                    <form class="d-flex justify-content-end mb-3"
                           action="${pageContext.request.contextPath}/QL-datphong" method="get">
                         <input type="hidden" name="action" value="search"/>
                         <div class="d-flex" style="min-width:350px;">
-                            <input type="text" name="keyword" class="form-control me-2" 
-                                   placeholder="Tìm mã đơn, mã khách, mã phòng hoặc trạng thái..." 
+                            <input type="text" name="keyword" class="form-control me-2"
+                                   placeholder="Tìm mã đơn, mã khách hoặc trạng thái..."
                                    value="${param.keyword}">
-                            <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+                            <button class="btn btn-outline-primary" type="submit">
+                                <i class="bi bi-search"></i>
+                            </button>
                         </div>
                     </form>
 
-                    <!-- Bảng dữ liệu -->
                     <table class="table table-hover table-bordered align-middle">
                         <thead class="table-primary text-center">
                             <tr>
                                 <th>Mã đơn</th>
                                 <th>Khách (ID)</th>
-                                <th>Phòng (ID)</th>
-                                <th>Tên Phòng</th>
+                                <th>Danh sách phòng</th>
                                 <th>Ngày nhận</th>
                                 <th>Ngày trả</th>
-                                <th>Trạng thái</th>
-                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             <c:forEach var="dp" items="${dsDatPhong}">
                                 <tr>
-                                    <td class="text-center">DP<c:out value="${dp.maDatPhong}" /></td>
-                                    <td class="text-center"><c:out value="${dp.maKH}" /></td>
-                                    <td class="text-center"><c:out value="${dp.maPhong}" /></td>
-                                    <td class="text-center"><c:out value="${dp.tenPhong}" /></td>
-                                    <td class="text-center"><c:out value="${dp.ngayNhan}" /></td>
-                                    <td class="text-center"><c:out value="${dp.ngayTra}" /></td>
-                                    <td class="text-center">
-                                        <c:choose>
-                                            <c:when test="${fn:contains(dp.trangThai, 'Chờ')}">
-                                                <span class="badge bg-warning text-dark"><c:out value="${dp.trangThai}" /></span>
-                                            </c:when>
-                                            <c:when test="${fn:contains(dp.trangThai, 'hủy') || fn:contains(dp.trangThai, 'Hủy')}">
-                                                <span class="badge bg-danger"><c:out value="${dp.trangThai}" /></span>
-                                            </c:when>
-                                            <c:when test="${fn:contains(dp.trangThai, 'xác nhận')}">
-                                                <span class="badge bg-success"><c:out value="${dp.trangThai}" /></span>
-                                            </c:when>
-                                            <c:when test="${fn:contains(dp.trangThai, 'nhận')}">
-                                                <span class="badge bg-primary"><c:out value="${dp.trangThai}" /></span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="badge bg-secondary"><c:out value="${dp.trangThai}" /></span>
-                                            </c:otherwise>
-                                        </c:choose>
+                                    <td class="text-center">DP${dp.maDatPhong}</td>
+                                    <td class="text-center">${dp.maKH}</td>
+
+                                    <td>
+                                        <c:forEach var="ct" items="${dp.chiTiet}">
+                                            <div class="room-box mb-2 p-2 border rounded d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <strong class="text-primary">${ct.tenPhong}</strong>
+                                                    <div class="small text-muted">
+                                                        Giá: <fmt:formatNumber value="${ct.gia}" type="number" groupingUsed="true"/>₫
+                                                    </div>
+                                                    <span class="badge
+                                                          <c:choose>
+                                                              <c:when test="${fn:toLowerCase(ct.trangThai) eq 'đã duyệt'}">bg-success</c:when>
+                                                              <c:when test="${fn:toLowerCase(ct.trangThai) eq 'chờ duyệt'}">bg-warning text-dark</c:when>
+                                                              <c:when test="${fn:toLowerCase(ct.trangThai) eq 'hủy'}">bg-danger</c:when>
+                                                              <c:when test="${fn:toLowerCase(ct.trangThai) eq 'đang ở'}">bg-primary</c:when>
+                                                              <c:otherwise>bg-secondary</c:otherwise>
+                                                          </c:choose>">
+                                                        ${ct.trangThai}
+                                                    </span>
+
+                                                </div>
+
+                                                <div class="btn-group">
+                                                    <c:choose>
+                                                        <c:when test="${ct.trangThai eq 'Chờ duyệt'}">
+                                                            <form action="${pageContext.request.contextPath}/QL-chitietdatphong" method="post" style="display:inline;">
+                                                                <input type="hidden" name="action" value="approve"/>
+                                                                <input type="hidden" name="id" value="${ct.maCTDP}"/>
+                                                                <button class="btn btn-sm btn-success" title="Duyệt phòng này"
+                                                                        onclick="return confirm('Xác nhận duyệt ${ct.tenPhong}?')">
+                                                                    <i class="bi bi-check-circle"></i>
+                                                                </button>
+                                                            </form>
+                                                            <form action="${pageContext.request.contextPath}/QL-chitietdatphong" method="post" style="display:inline;">
+                                                                <input type="hidden" name="action" value="cancel"/>
+                                                                <input type="hidden" name="id" value="${ct.maCTDP}"/>
+                                                                <button class="btn btn-sm btn-danger" title="Hủy phòng này"
+                                                                        onclick="return confirm('Xác nhận hủy ${ct.tenPhong}?')">
+                                                                    <i class="bi bi-x-circle"></i>
+                                                                </button>
+                                                            </form>
+                                                        </c:when>
+
+                                                        <c:when test="${ct.trangThai eq 'Đã duyệt'}">
+                                                            <form action="${pageContext.request.contextPath}/QL-chitietdatphong" method="post" style="display:inline;">
+                                                                <input type="hidden" name="action" value="checkin"/>
+                                                                <input type="hidden" name="id" value="${ct.maCTDP}"/>
+                                                                <button class="btn btn-sm btn-primary" title="Nhận phòng"
+                                                                        onclick="return confirm('Xác nhận khách nhận phòng ${ct.tenPhong}?')">
+                                                                    <i class="bi bi-door-open"></i>
+                                                                </button>
+                                                            </form>
+                                                        </c:when>
+
+                                                        <c:when test="${ct.trangThai eq 'Đang ở'}">
+                                                            <form action="${pageContext.request.contextPath}/QL-chitietdatphong" method="post" style="display:inline;">
+                                                                <input type="hidden" name="action" value="checkout"/>
+                                                                <input type="hidden" name="id" value="${ct.maCTDP}"/>
+                                                                <button class="btn btn-sm btn-secondary" title="Trả phòng"
+                                                                        onclick="return confirm('Xác nhận trả phòng ${ct.tenPhong}?')">
+                                                                    <i class="bi bi-arrow-clockwise"></i>
+                                                                </button>
+                                                            </form>
+                                                        </c:when>
+
+                                                        <c:otherwise>
+                                                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                                                <i class="bi bi-lock"></i>
+                                                            </button>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                            </div>
+                                        </c:forEach>
+
+                                        <c:if test="${empty dp.chiTiet}">
+                                            <span class="text-muted fst-italic">Không có phòng</span>
+                                        </c:if>
                                     </td>
 
                                     <td class="text-center">
-                                        <c:set var="st" value="${fn:trim(fn:toLowerCase(dp.trangThai))}" />
-                                        <div class="d-flex justify-content-center gap-2">
-                                            <c:choose>
-                                                <c:when test="${st == 'chờ duyệt' || st == 'chờ xác nhận'}">
-                                                    <form action="${pageContext.request.contextPath}/QL-datphong" method="post" style="display:inline-block;">
-                                                        <input type="hidden" name="action" value="approve" />
-                                                        <input type="hidden" name="id" value="${dp.maDatPhong}" />
-                                                        <button class="btn btn-sm btn-success" type="submit" onclick="return confirm('Duyệt đơn này?')">
-                                                            <i class="bi bi-check-circle"></i>
-                                                        </button>
-                                                    </form>
-
-                                                    <form action="${pageContext.request.contextPath}/QL-datphong" method="post" style="display:inline-block;">
-                                                        <input type="hidden" name="action" value="reject" />
-                                                        <input type="hidden" name="id" value="${dp.maDatPhong}" />
-                                                        <button class="btn btn-sm btn-danger" type="submit" onclick="return confirm('Từ chối đơn này?')">
-                                                            <i class="bi bi-x-circle"></i>
-                                                        </button>
-                                                    </form>
-                                                </c:when>
-
-                                                <c:when test="${st == 'đã xác nhận' || st == 'xác nhận'}">
-                                                    <form action="${pageContext.request.contextPath}/QL-datphong" method="post">
-                                                        <input type="hidden" name="action" value="checkin" />
-                                                        <input type="hidden" name="id" value="${dp.maDatPhong}" />
-                                                        <button class="btn btn-sm btn-primary" type="submit" onclick="return confirm('Xác nhận khách nhận phòng?')">
-                                                            <i class="bi bi-door-open"></i>
-                                                        </button>
-                                                    </form>
-                                                </c:when>
-
-                                                <c:when test="${st == 'đã nhận' || st == 'nhận'}">
-                                                    <form action="${pageContext.request.contextPath}/QL-datphong" method="post">
-                                                        <input type="hidden" name="action" value="checkout" />
-                                                        <input type="hidden" name="id" value="${dp.maDatPhong}" />
-                                                        <button class="btn btn-sm btn-secondary" type="submit" onclick="return confirm('Xác nhận trả phòng?')">
-                                                            <i class="bi bi-arrow-clockwise"></i>
-                                                        </button>
-                                                    </form>
-                                                </c:when>
-
-                                                <c:otherwise>
-                                                    <button class="btn btn-sm btn-secondary" disabled><i class="bi bi-lock"></i></button>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                        </div>
+                                        <fmt:formatDate value="${dp.ngayNhan}" pattern="yyyy-MM-dd" />
+                                    </td>
+                                    <td class="text-center">
+                                        <fmt:formatDate value="${dp.ngayTra}" pattern="yyyy-MM-dd" />
                                     </td>
                                 </tr>
                             </c:forEach>
                         </tbody>
                     </table>
-                    <!-- ======= Pagination ======= -->
-                    <%
-                        int start = Math.max(1, (Integer) request.getAttribute("currentPage") - 2);
-                        int end = Math.min((Integer) request.getAttribute("totalPages"), (Integer) request.getAttribute("currentPage") + 2);
-                        String ctx = request.getContextPath();
-                    %>
 
                     <div class="mt-4 d-flex flex-column align-items-center">
                         <div class="text-muted mb-2">
                             Trang ${currentPage} / ${totalPages} — Tổng <strong>${totalItems}</strong> đơn đặt phòng
                         </div>
-
                         <nav aria-label="Page navigation">
                             <ul class="pagination justify-content-center mb-0">
-
-                                <!-- Nút Trước -->
                                 <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                                    <a class="page-link" href="<%=ctx%>/QL-datphong?action=list&page=${currentPage-1}&size=${pageSize}" aria-label="Previous">&laquo;</a>
+                                    <a class="page-link" href="?action=list&page=${currentPage-1}&size=${pageSize}" aria-label="Previous">&laquo;</a>
                                 </li>
-
-                                <% if (start > 1) {%>
-                                <li class="page-item"><a class="page-link" href="<%=ctx%>/QL-datphong?action=list&page=1&size=${pageSize}">1</a></li>
-                                    <% if (start > 2) { %>
-                                <li class="page-item disabled"><span class="page-link">...</span></li>
-                                    <% } %>
-                                    <% } %>
-
-                                <% for (int i = start; i <= end; i++) {%>
-                                <li class="page-item <%= (i == (Integer) request.getAttribute("currentPage") ? "active" : "")%>">
-                                    <a class="page-link" href="<%=ctx%>/QL-datphong?action=list&page=<%=i%>&size=${pageSize}"><%=i%></a>
-                                </li>
-                                <% } %>
-
-                                <% if (end < (Integer) request.getAttribute("totalPages")) { %>
-                                <% if (end < (Integer) request.getAttribute("totalPages") - 1) { %>
-                                <li class="page-item disabled"><span class="page-link">...</span></li>
-                                    <% }%>
-                                <li class="page-item"><a class="page-link" href="<%=ctx%>/QL-datphong?action=list&page=${totalPages}&size=${pageSize}">${totalPages}</a></li>
-                                    <% }%>
-
-                                <!-- Nút Sau -->
+                                <c:forEach begin="1" end="${totalPages}" var="i">
+                                    <li class="page-item ${i == currentPage ? 'active' : ''}">
+                                        <a class="page-link" href="?action=list&page=${i}&size=${pageSize}">${i}</a>
+                                    </li>
+                                </c:forEach>
                                 <li class="page-item ${currentPage == totalPages ? 'disabled' : ''}">
-                                    <a class="page-link" href="<%=ctx%>/QL-datphong?action=list&page=${currentPage+1}&size=${pageSize}" aria-label="Next">&raquo;</a>
+                                    <a class="page-link" href="?action=list&page=${currentPage+1}&size=${pageSize}" aria-label="Next">&raquo;</a>
                                 </li>
                             </ul>
                         </nav>
                     </div>
-
                 </div>
             </div>
         </div>

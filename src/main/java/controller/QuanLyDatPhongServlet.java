@@ -5,13 +5,12 @@ import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-import model.DatPhongDAO;
 import model.DatPhong;
+import model.DatPhongDAO;
+import model.ChiTietDatPhong;
+import model.ChiTietDatPhongDAO;
 import model.PhongDAO;
 
-/**
- * Servlet quản lý đặt phòng: list, duyệt, từ chối, nhận, trả
- */
 @WebServlet(name = "QuanLyDatPhongServlet", urlPatterns = {"/QL-datphong"})
 public class QuanLyDatPhongServlet extends HttpServlet {
 
@@ -35,31 +34,105 @@ public class QuanLyDatPhongServlet extends HttpServlet {
         }
 
         switch (action) {
-            case "list":
-                list(request, response);
-                break;
             case "approve":
-                approve(request, response);
-                break;
-            case "reject":
-                reject(request, response);
+                updateStatus(request, response, "Đã duyệt", "Đã đặt");
                 break;
             case "checkin":
-                checkin(request, response);
+                updateStatus(request, response, "Đang ở", "Đang ở");
                 break;
             case "checkout":
-                checkout(request, response);
+                updateStatus(request, response, "Đã trả phòng", "Trống");
+                break;
+            case "cancel":
+                updateStatus(request, response, "Hủy", "Trống");
                 break;
             case "search":
                 search(request, response);
                 break;
             default:
                 list(request, response);
-                break;
         }
     }
 
-    // GET/POST forward to processRequest
+    private void list(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        int page = 1, size = 6;
+        try {
+            if (request.getParameter("page") != null) {
+                page = Integer.parseInt(request.getParameter("page"));
+            }
+        } catch (NumberFormatException ignored) {
+        }
+
+        int total = dpDAO.countAll();
+        int totalPages = (int) Math.ceil((double) total / size);
+        int offset = (page - 1) * size;
+
+        List<DatPhong> ds = dpDAO.getPaged(offset, size);
+
+        request.setAttribute("dsDatPhong", ds);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("pageSize", size);
+        request.setAttribute("totalItems", total);
+
+        request.getRequestDispatcher("/admin/quanlydatphong.jsp").forward(request, response);
+    }
+
+    private void search(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String keyword = request.getParameter("keyword");
+        // Implement search in DAO if needed; fallback: list all
+        list(request, response);
+    }
+
+    private void updateStatus(HttpServletRequest request, HttpServletResponse response,
+            String trangThaiDon, String trangThaiPhong)
+            throws ServletException, IOException {
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            DatPhong dp = dpDAO.getById(id);
+            if (dp == null) {
+                request.getSession().setAttribute("error", "Đơn không tồn tại");
+                list(request, response);
+                return;
+            }
+
+            // 1) Cập nhật DatPhong + ChiTietDatPhong (đã đồng bộ trong DAO)
+            boolean ok1 = dpDAO.updateStatus(id, trangThaiDon);
+
+            // ✅ Gọi DAO cập nhật từng ChiTietDatPhong để đồng bộ trạng thái phòng
+            ChiTietDatPhongDAO ctdpDAO = new ChiTietDatPhongDAO();
+
+            // 2) Cập nhật status của bảng Phong cho từng phòng trong đơn
+            boolean ok2 = true;
+            List<ChiTietDatPhong> chiTietList = dp.getChiTiet();
+            if (chiTietList != null && !chiTietList.isEmpty()) {
+                for (ChiTietDatPhong c : chiTietList) {
+                    // 🔥 Gọi đúng hàm này để trigger đồng bộ Phòng + Đơn
+                    boolean updated = ctdpDAO.updateTrangThai(c.getMaCTDP(), trangThaiDon);
+                    if (!updated) {
+                        ok2 = false;
+                    }
+                }
+            } else {
+                ok2 = false;
+            }
+
+            if (ok1 && ok2) {
+                request.getSession().setAttribute("success", "Cập nhật trạng thái thành công!");
+            }  else {
+                request.getSession().setAttribute("error", "Không thể cập nhật trạng thái.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.getSession().setAttribute("error", "Dữ liệu không hợp lệ");
+        }
+        list(request, response);
+
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -70,169 +143,5 @@ public class QuanLyDatPhongServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processRequest(request, response);
-    }
-
-    private void list(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String pageParam = request.getParameter("page");
-        String sizeParam = request.getParameter("size");
-
-        int page = 1;
-        int pageSize = 6; // số đơn đặt phòng mỗi trang
-
-        try {
-            if (pageParam != null) {
-                page = Math.max(1, Integer.parseInt(pageParam));
-            }
-        } catch (NumberFormatException e) {
-            page = 1;
-        }
-
-        try {
-            if (sizeParam != null) {
-                pageSize = Math.max(1, Integer.parseInt(sizeParam));
-            }
-        } catch (NumberFormatException e) {
-            pageSize = 6;
-        }
-
-        int totalItems = dpDAO.countAll(); // tổng số đơn đặt phòng
-        int totalPages = (int) Math.ceil((double) totalItems / pageSize);
-        if (totalPages <= 0) {
-            totalPages = 1;
-        }
-        if (page > totalPages) {
-            page = totalPages;
-        }
-
-        int offset = (page - 1) * pageSize;
-
-        // Lấy danh sách đặt phòng theo trang
-        List<DatPhong> ds = dpDAO.getPaged(offset, pageSize);
-
-        request.setAttribute("dsDatPhong", ds);
-        request.setAttribute("currentPage", page);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("pageSize", pageSize);
-        request.setAttribute("totalItems", totalItems);
-
-        request.getRequestDispatcher("/admin/quanlydatphong.jsp").forward(request, response);
-    }
-
-    private void approve(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String idStr = request.getParameter("id");
-        try {
-            int id = Integer.parseInt(idStr);
-            DatPhong dp = dpDAO.getById(id);
-            if (dp == null) {
-                request.setAttribute("error", "Đơn không tồn tại");
-                list(request, response);
-                return;
-            }
-
-            boolean okDp = dpDAO.updateStatus(id, "Đã xác nhận");
-            boolean okPhong = phongDAO.updateStatus(dp.getMaPhong(), "Đã đặt");
-
-            if (okDp && okPhong) {
-                request.setAttribute("success", "Duyệt đơn thành công (cập nhật trạng thái phòng)");
-            } else if (okDp) {
-                request.setAttribute("success", "Duyệt đơn thành công (chưa cập nhật trạng thái phòng)");
-            } else {
-                request.setAttribute("error", "Duyệt đơn thất bại");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Dữ liệu không hợp lệ");
-        }
-        list(request, response);
-    }
-
-    private void reject(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String idStr = request.getParameter("id");
-        try {
-            int id = Integer.parseInt(idStr);
-            DatPhong dp = dpDAO.getById(id);
-            if (dp == null) {
-                request.setAttribute("error", "Đơn không tồn tại");
-                list(request, response);
-                return;
-            }
-
-            boolean okDp = dpDAO.updateStatus(id, "hủy");
-            boolean okPhong = phongDAO.updateStatus(dp.getMaPhong(), "trống");
-
-            if (okDp) {
-                request.setAttribute("success", "Hủy đơn thành công");
-            } else {
-                request.setAttribute("error", "Hủy đơn thất bại");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Dữ liệu không hợp lệ");
-        }
-        list(request, response);
-    }
-
-    private void checkin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String idStr = request.getParameter("id");
-        try {
-            int id = Integer.parseInt(idStr);
-            DatPhong dp = dpDAO.getById(id);
-            if (dp == null) {
-                request.setAttribute("error", "Đơn không tồn tại");
-                list(request, response);
-                return;
-            }
-
-            boolean okDp = dpDAO.updateStatus(id, "Đã nhận");
-            boolean okPhong = phongDAO.updateStatus(dp.getMaPhong(), "Đang ở");
-
-            if (okDp && okPhong) {
-                request.setAttribute("success", "Khách đã nhận phòng");
-            } else if (okDp) {
-                request.setAttribute("success", "Cập nhật đơn thành công (phòng chưa cập nhật)");
-            } else {
-                request.setAttribute("error", "Không thể cập nhật trạng thái nhận phòng");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Dữ liệu không hợp lệ");
-        }
-        list(request, response);
-    }
-
-    private void checkout(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String idStr = request.getParameter("id");
-        try {
-            int id = Integer.parseInt(idStr);
-            DatPhong dp = dpDAO.getById(id);
-            if (dp == null) {
-                request.setAttribute("error", "Đơn không tồn tại");
-                list(request, response);
-                return;
-            }
-
-            boolean okDp = dpDAO.updateStatus(id, "Đã trả phòng");
-            boolean okPhong = phongDAO.updateStatus(dp.getMaPhong(), "trống");
-
-            if (okDp && okPhong) {
-                request.setAttribute("success", "Khách đã trả phòng và phòng được chuyển về trạng thái Còn trống");
-            } else if (okDp) {
-                request.setAttribute("success", "Cập nhật đơn thành công (phòng chưa cập nhật)");
-            } else {
-                request.setAttribute("error", "Không thể cập nhật trạng thái trả phòng");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Dữ liệu không hợp lệ");
-        }
-        list(request, response);
-    }
-
-    private void search(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String keyword = request.getParameter("keyword");
-        List<DatPhong> ds = dpDAO.search(keyword);
-        request.setAttribute("dsDatPhong", ds);
-        request.setAttribute("keyword", keyword);
-        request.getRequestDispatcher("/admin/quanlydatphong.jsp").forward(request, response);
     }
 }
