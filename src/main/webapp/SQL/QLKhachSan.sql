@@ -109,9 +109,9 @@ INSERT INTO Phong (TenPhong, LoaiPhong, Gia, MoTa, TrangThai)
 VALUES
 (N'Phòng Deluxe 101', N'Deluxe', 850000, N'Phòng rộng rãi, có ban công view biển', N'Trống'),
 (N'Phòng Standard 102', N'Standard', 500000, N'Phòng tiêu chuẩn, đầy đủ tiện nghi cơ bản', N'Trống'),
-(N'Phòng Suite 201', N'Suite', 1200000, N'Phòng cao cấp có phòng khách riêng', N'Đã đặt'),
+(N'Phòng Suite 201', N'Suite', 1200000, N'Phòng cao cấp có phòng khách riêng', N'Trống'),
 (N'Phòng VIP 202', N'VIP', 950000, N'Phòng cao cấp có đầy đủ mọi thứ trên đời', N'Trống'),
-(N'Phòng VIP 301', N'VIP', 1800000, N'Phòng cao cấp có bồn tắm và minibar', N'Đã đặt'),
+(N'Phòng VIP 301', N'VIP', 1800000, N'Phòng cao cấp có bồn tắm và minibar', N'Trống'),
 (N'Phòng VIP 302', N'VIP', 350000, N'Phòng cực cao cấp dành cho đại gia', N'Trống');
 GO
 
@@ -128,14 +128,3 @@ VALUES
 (6, N'Wifi miễn phí', N'Tốc độ cao');
 GO
 
--- ====================================
--- INSERT DAT PHONG
--- ====================================
-INSERT INTO DatPhong (MaKH, MaPhong, TenPhong, NgayDat, NgayNhan, NgayTra, TrangThai)
-VALUES
-(1, 3, N'Phòng Deluxe', '2025-10-10', '2025-10-15', '2025-10-18', N'Chờ xác nhận'),
-(2, 6, N'VIP', '2025-10-12', '2025-10-20', '2025-10-22', N'Chờ xác nhận'),
-(3, 1, N'Phòng VIP', '2025-10-08', '2025-10-10', '2025-10-12', N'Đã trả phòng'),
-(4, 5, N'Phòng Tiêu Chuẩn', '2025-09-28', '2025-09-30', '2025-10-02', N'Đang ở'),
-(5, 4, N'Phòng Deluxe', '2025-10-01', '2025-10-05', '2025-10-08', N'Hủy');
-GO
