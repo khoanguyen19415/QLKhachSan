@@ -122,11 +122,20 @@ GO
 -- PHÒNG
 INSERT INTO Phong (TenPhong, LoaiPhong, Gia, MoTa, TrangThai)
 VALUES
+<<<<<<< HEAD
 (N'Phòng Standard 101', N'Standard', 500000, N'Tiện nghi cơ bản', N'Trống'),
 (N'Phòng Deluxe 102', N'Deluxe', 850000, N'Ban công view biển', N'Trống'),
 (N'Phòng Suite 201', N'Suite', 1200000, N'Phòng cao cấp có phòng khách riêng', N'Trống'),
 (N'Phòng VIP 301', N'VIP', 1800000, N'Phòng có bồn tắm và minibar', N'Trống'),
 (N'Phòng Presidential 401', N'Presidential Suite', 3500000, N'Phòng tổng thống sang trọng', N'Trống');
+=======
+(N'Phòng Deluxe 101', N'Deluxe', 850000, N'Phòng rộng rãi, có ban công view biển', N'Trống'),
+(N'Phòng Standard 102', N'Standard', 500000, N'Phòng tiêu chuẩn, đầy đủ tiện nghi cơ bản', N'Trống'),
+(N'Phòng Suite 201', N'Suite', 1200000, N'Phòng cao cấp có phòng khách riêng', N'Trống'),
+(N'Phòng VIP 202', N'VIP', 950000, N'Phòng cao cấp có đầy đủ mọi thứ trên đời', N'Trống'),
+(N'Phòng VIP 301', N'VIP', 1800000, N'Phòng cao cấp có bồn tắm và minibar', N'Trống'),
+(N'Phòng VIP 302', N'VIP', 350000, N'Phòng cực cao cấp dành cho đại gia', N'Trống');
+>>>>>>> 77590fdc33d76c6c1191217ed61e27aa6f2d924d
 GO
 
 -- CHI TIẾT PHÒNG
@@ -139,6 +148,7 @@ VALUES
 (5, N'Bồn tắm', N'Thiết kế cao cấp');
 GO
 
+<<<<<<< HEAD
 -- ĐƠN ĐẶT PHÒNG
 INSERT INTO DatPhong (MaKH, NgayNhan, NgayTra, TongTien, TrangThai)
 VALUES
@@ -153,3 +163,5 @@ VALUES
 (1, 2, 850000, N'Phòng đôi', N'Chờ duyệt'),
 (2, 3, 1200000, N'Yêu cầu thêm giường phụ', N'Chờ duyệt');
 GO
+=======
+>>>>>>> 77590fdc33d76c6c1191217ed61e27aa6f2d924d
