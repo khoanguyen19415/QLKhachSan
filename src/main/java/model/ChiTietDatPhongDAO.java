@@ -160,5 +160,50 @@ public class ChiTietDatPhongDAO {
             ps.executeUpdate();
         }
     }
+// ✅ Hủy tất cả đơn khác trùng phòng & thời gian
+
+    public void huyDonTrungPhong(int maPhong, java.sql.Date ngayNhan, java.sql.Date ngayTra, int maCTDP) {
+        String sql = "UPDATE ctdp "
+                + "SET ctdp.TrangThai = N'Hủy' "
+                + "FROM ChiTietDatPhong ctdp "
+                + "JOIN DatPhong dp ON dp.MaDatPhong = ctdp.MaDatPhong "
+                + "WHERE ctdp.MaPhong = ? "
+                + "AND NOT (dp.NgayTra <= ? OR dp.NgayNhan >= ?) "
+                + "AND ctdp.MaCTDP <> ? "
+                + "AND ctdp.TrangThai IN (N'Chờ duyệt', N'Đã duyệt')";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, maPhong);
+            ps.setDate(2, ngayNhan);
+            ps.setDate(3, ngayTra);
+            ps.setInt(4, maCTDP);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ChiTietDatPhong getById(int maCTDP) {
+        String sql = "SELECT * FROM ChiTietDatPhong WHERE MaCTDP = ?";
+        try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, maCTDP);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    ChiTietDatPhong ct = new ChiTietDatPhong();
+                    ct.setMaCTDP(rs.getInt("MaCTDP"));
+                    ct.setMaDatPhong(rs.getInt("MaDatPhong"));
+                    ct.setMaPhong(rs.getInt("MaPhong"));
+                    ct.setGia(rs.getDouble("Gia"));
+                    ct.setGhiChu(rs.getString("GhiChu"));
+                    ct.setTrangThai(rs.getString("TrangThai"));
+                    return ct;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
 }

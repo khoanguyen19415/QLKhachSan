@@ -4,7 +4,10 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+import model.ChiTietDatPhong;
 import model.ChiTietDatPhongDAO;
+import model.DatPhong;
+import model.DatPhongDAO;
 
 @WebServlet(name = "QuanLyChiTietDatPhongServlet", urlPatterns = {"/QL-chitietdatphong"})
 public class QuanLyChiTietDatPhongServlet extends HttpServlet {
@@ -50,7 +53,34 @@ public class QuanLyChiTietDatPhongServlet extends HttpServlet {
 
             switch (action) {
                 case "approve":
+                    // Cập nhật đơn này thành "Đã duyệt"
                     success = ctdpDAO.updateTrangThai(id, "Đã duyệt");
+
+                    if (success) {
+                        // Lấy thông tin chi tiết đơn vừa duyệt
+                        ChiTietDatPhong ctdp = ctdpDAO.getById(id);
+
+                        if (ctdp != null) {
+                            // Lấy thông tin đơn gốc
+                            DatPhongDAO dpDAO = new DatPhongDAO();
+                            DatPhong dp = dpDAO.getById(ctdp.getMaDatPhong());
+
+                            // ✅ Gọi hàm tự động hủy các đơn khác trùng phòng + thời gian
+                            if (dp != null) {
+                                ctdpDAO.huyDonTrungPhong(
+                                        ctdp.getMaPhong(),
+                                        new java.sql.Date(dp.getNgayNhan().getTime()),
+                                        new java.sql.Date(dp.getNgayTra().getTime()),
+                                        id
+                                );
+
+                            }
+                        }
+
+                        session.setAttribute("success", "Đã duyệt phòng thành công! Các đơn trùng phòng đã bị hủy tự động.");
+                    } else {
+                        session.setAttribute("error", "Không thể duyệt phòng!");
+                    }
                     break;
                 case "cancel":
                     success = ctdpDAO.updateTrangThai(id, "Hủy");
