@@ -44,8 +44,8 @@ public class TaiKhoanServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
+//        request.setCharacterEncoding("UTF-8");
+//        response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
 
         String action = request.getParameter("action");
@@ -205,7 +205,7 @@ public class TaiKhoanServlet extends HttpServlet {
             tk.setMatKhau(password);
             tk.setChucVu("KhachHang");
 
-            int newMaTK = tkDAO.insertAndGetId(tk); // cần implement trong TaiKhoanDAO
+            int newMaTK = tkDAO.insertAndGetId(tk); 
             if (newMaTK <= 0) {
                 request.setAttribute("error", "Đăng ký thất bại (không thể tạo tài khoản).");
                 request.getRequestDispatcher("/user/register.jsp").forward(request, response);
@@ -218,9 +218,9 @@ public class TaiKhoanServlet extends HttpServlet {
             kh.setEmail(email);
             kh.setDiaChi(diaChi);
 
-            boolean ok = khDAO.insertKhachHangWithMaTK(kh, newMaTK); // cần implement trong KhachHangDAO
+            boolean ok = khDAO.insertKhachHangWithMaTK(kh, newMaTK); 
             if (!ok) {
-                tkDAO.deleteById(newMaTK); // rollback (nên có trong TaiKhoanDAO)
+                tkDAO.deleteById(newMaTK); 
                 request.setAttribute("error", "Đăng ký thất bại khi lưu thông tin khách hàng.");
                 request.getRequestDispatcher("/user/register.jsp").forward(request, response);
                 return;

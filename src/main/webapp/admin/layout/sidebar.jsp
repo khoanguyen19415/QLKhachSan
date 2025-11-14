@@ -2,7 +2,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <div class="sidebar">
     <h5><i class="bi bi-hospital me-2"></i>Sunshine Admin</h5>
-    
+
     <a href="quan-tri" class="nav-link active">
         <i class="bi bi-speedometer2 me-2"></i> Bảng điều khiển
     </a>
@@ -21,9 +21,5 @@
 
     <a href="Thong-Ke" class="nav-link">
         <i class="bi bi-bar-chart-line me-2"></i> Thống kê
-    </a>
-
-    <a href="#" class="nav-link">
-        <i class="bi bi-gear me-2"></i> Cấu hình hệ thống
     </a>
 </div>

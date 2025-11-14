@@ -53,7 +53,7 @@ public class PhongServlet extends HttpServlet {
         String sizeParam = request.getParameter("size");
 
         int page = 1;
-        int pageSize = 6; // mặc định 6 phòng / trang
+        int pageSize = 6;
 
         try {
             if (pageParam != null) {
@@ -71,7 +71,6 @@ public class PhongServlet extends HttpServlet {
             pageSize = 6;
         }
 
-        // --- Tính tổng và tổng trang ---
         int totalItems = phongDAO.countAllPhong();
         int totalPages = (int) Math.ceil((double) totalItems / pageSize);
         if (totalPages <= 0) {
@@ -83,10 +82,8 @@ public class PhongServlet extends HttpServlet {
 
         int offset = (page - 1) * pageSize;
 
-        // --- Lấy danh sách phòng theo trang ---
         List<Phong> dsPhong = phongDAO.getPaged(offset, pageSize);
 
-        // --- Lấy ảnh đầu tiên cho từng phòng của trang này ---
         Map<Integer, String> firstImages = new HashMap<>();
         if (dsPhong != null) {
             for (Phong p : dsPhong) {
@@ -111,7 +108,6 @@ public class PhongServlet extends HttpServlet {
             }
         }
 
-        // --- Đặt attribute cho JSP ---
         request.setAttribute("dsPhong", dsPhong);
         request.setAttribute("firstImages", firstImages);
         request.setAttribute("currentPage", page);

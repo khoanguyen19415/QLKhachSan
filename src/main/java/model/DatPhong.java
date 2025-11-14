@@ -10,16 +10,15 @@ public class DatPhong {
     private Date ngayDat;
     private Date ngayNhan;
     private Date ngayTra;
-    private Double tongTien; // có thể null
+    private Double tongTien; 
     private String trangThai;
-    private List<ChiTietDatPhong> chiTiet; // danh sách phòng trong đơn
+    private List<ChiTietDatPhong> chiTiet; 
 
     private String tenPhong;
 
     public DatPhong() {
     }
 
-    // getters / setters
     public int getMaDatPhong() {
         return maDatPhong;
     }

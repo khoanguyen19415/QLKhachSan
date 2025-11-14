@@ -132,7 +132,6 @@ public class DatPhongsServlet extends HttpServlet {
 
         System.out.println("===> showForm: Phòng " + maPhong + " trạng thái hiện tại là: " + p.getTrangThai());
 
-        // Lấy ảnh
         List<PhongAnh> dsAnh = phongAnhDAO.getAnhTheoPhong(maPhong);
         String firstImg = null;
         if (dsAnh != null && !dsAnh.isEmpty()) {
@@ -182,12 +181,10 @@ public class DatPhongsServlet extends HttpServlet {
             int maPhong = Integer.parseInt(maPhongStr);
             int maKH = kh.getMaKH();
 
-            // ✅ Dùng LocalDate để kiểm tra ngày chính xác
             java.time.LocalDate ngayNhan = java.time.LocalDate.parse(ngayNhanStr);
             java.time.LocalDate ngayTra = java.time.LocalDate.parse(ngayTraStr);
             java.time.LocalDate homNay = java.time.LocalDate.now();
 
-// 🚫 1. Kiểm tra ngày nhận không được ở quá khứ
             if (ngayNhan.isBefore(homNay)) {
                 request.setAttribute("error", "Ngày nhận phải từ hôm nay trở đi!");
                 request.setAttribute("maPhong", maPhong);
@@ -197,7 +194,6 @@ public class DatPhongsServlet extends HttpServlet {
                 return;
             }
 
-// 🚫 2. Kiểm tra ngày trả >= ngày nhận
             if (ngayTra.isBefore(ngayNhan)) {
                 request.setAttribute("error", "Ngày trả phải lớn hơn hoặc bằng ngày nhận!");
                 request.setAttribute("maPhong", maPhong);
@@ -215,7 +211,6 @@ public class DatPhongsServlet extends HttpServlet {
                 return;
             }
 
-            // ✅ Kiểm tra trạng thái phòng (chỉ cho đặt nếu còn trống)
             if (!"Trống".equalsIgnoreCase(p.getTrangThai()) && !"Còn trống".equalsIgnoreCase(p.getTrangThai())) {
                 request.setAttribute("error", "Phòng hiện không còn trống, không thể đặt!");
                 request.setAttribute("phong", p);
@@ -226,7 +221,6 @@ public class DatPhongsServlet extends HttpServlet {
                 return;
             }
 
-            // ✅ Kiểm tra xem khách đã có đơn đặt cùng ngày chưa
             DatPhong existing = dpDAO.findExistingBooking(maKH,
                     java.sql.Date.valueOf(ngayNhan),
                     java.sql.Date.valueOf(ngayTra));
@@ -234,7 +228,6 @@ public class DatPhongsServlet extends HttpServlet {
             boolean okInsert = false;
 
             if (existing != null) {
-                // 🔁 Đơn đã tồn tại → chỉ thêm phòng mới vào ChiTietDatPhong
                 ChiTietDatPhong ctdp = new ChiTietDatPhong();
                 ctdp.setMaDatPhong(existing.getMaDatPhong());
                 ctdp.setMaPhong(maPhong);
@@ -242,9 +235,8 @@ public class DatPhongsServlet extends HttpServlet {
                 ctdp.setGhiChu("Thêm phòng vào đơn hiện có");
                 ctdp.setTrangThai("Chờ duyệt");
 
-                okInsert = dpDAO.insertChiTiet(ctdp); // bạn cần có hàm này trong DatPhongDAO
+                okInsert = dpDAO.insertChiTiet(ctdp);
             } else {
-                // 🆕 Tạo đơn mới nếu chưa có
                 DatPhong dp = new DatPhong();
                 dp.setMaKH(maKH);
                 dp.setNgayDat(new java.util.Date());

@@ -44,13 +44,13 @@ public class DashBoardServlet extends HttpServlet {
         String sqlTotalRooms = "SELECT COUNT(*) FROM Phong";
         int totalRooms = countSingleValue(sqlTotalRooms);
 
-        String sqlGuests = "SELECT COUNT(*) FROM DatPhong WHERE LOWER(TrangThai) LIKE ?";
+        String sqlGuests = "SELECT COUNT(*) FROM ChiTietDatPhong WHERE LOWER(TrangThai) LIKE ?";
         int guests = countSingleValue(sqlGuests, "%nhận%");
 
-        String sqlBookings = "SELECT COUNT(*) FROM DatPhong WHERE LOWER(TrangThai) NOT LIKE ?";
+        String sqlBookings = "SELECT COUNT(*) FROM ChiTietDatPhong WHERE LOWER(TrangThai) NOT LIKE ?";
         int bookings = countSingleValue(sqlBookings, "%hủy%");
 
-        String sqlCancellations = "SELECT COUNT(*) FROM DatPhong WHERE LOWER(TrangThai) LIKE ?";
+        String sqlCancellations = "SELECT COUNT(*) FROM ChiTietDatPhong WHERE LOWER(TrangThai) LIKE ?";
         int cancellations = countSingleValue(sqlCancellations, "%hủy%");
 
         request.setAttribute("totalRooms", totalRooms);
@@ -58,7 +58,6 @@ public class DashBoardServlet extends HttpServlet {
         request.setAttribute("bookings", bookings);
         request.setAttribute("cancellations", cancellations);
 
-        // forward tới trang dashboard
         request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);
     }
 

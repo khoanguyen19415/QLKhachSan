@@ -33,9 +33,9 @@ public class QuanLyChiTietDatPhongServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+//        request.setCharacterEncoding("UTF-8");
+//        response.setCharacterEncoding("UTF-8");
         HttpSession session = request.getSession();
 
         String action = request.getParameter("action");
@@ -53,19 +53,15 @@ public class QuanLyChiTietDatPhongServlet extends HttpServlet {
 
             switch (action) {
                 case "approve":
-                    // Cập nhật đơn này thành "Đã duyệt"
                     success = ctdpDAO.updateTrangThai(id, "Đã duyệt");
 
                     if (success) {
-                        // Lấy thông tin chi tiết đơn vừa duyệt
                         ChiTietDatPhong ctdp = ctdpDAO.getById(id);
 
                         if (ctdp != null) {
-                            // Lấy thông tin đơn gốc
                             DatPhongDAO dpDAO = new DatPhongDAO();
                             DatPhong dp = dpDAO.getById(ctdp.getMaDatPhong());
 
-                            // ✅ Gọi hàm tự động hủy các đơn khác trùng phòng + thời gian
                             if (dp != null) {
                                 ctdpDAO.huyDonTrungPhong(
                                         ctdp.getMaPhong(),

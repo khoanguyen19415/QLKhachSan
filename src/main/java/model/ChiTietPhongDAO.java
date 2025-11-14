@@ -30,7 +30,6 @@ public class ChiTietPhongDAO {
         return list;
     }
 
-    // cập nhật
     public boolean updateChiTietPhong(ChiTietPhong ctp) {
         String sql = "UPDATE ChiTietPhong SET TienNghi = ?, MoTa = ? WHERE MaCTP = ?";
         try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -44,7 +43,6 @@ public class ChiTietPhongDAO {
         }
     }
 
-    // thêm mới -> trả về id vừa tạo (hoặc -1 nếu thất bại)
     public int insertChiTietPhong(ChiTietPhong ctp) {
         String sql = "INSERT INTO ChiTietPhong (MaPhong, TienNghi, MoTa) VALUES (?, ?, ?)";
         ResultSet rs = null;

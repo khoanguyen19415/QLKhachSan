@@ -98,17 +98,17 @@
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
 
-                                        <a class="btn btn-sm btn-danger" href="QL-Phong?action=delete&id=${p.maPhong}">
+                                        <a class="btn btn-sm btn-danger" href="QL-Phong?action=delete&id=${p.maPhong}" onclick="return confirm('Xóa phòng này?')">
                                             <i class="bi bi-trash"></i>
                                         </a>
+
                                     </td>
                                 </tr>
                             </c:forEach>
                         </tbody>
                     </table>
                     <!-- ======= PHÂN TRANG ======= -->
-                    <%
-                        int start = Math.max(1, (Integer) request.getAttribute("currentPage") - 2);
+                    <%                        int start = Math.max(1, (Integer) request.getAttribute("currentPage") - 2);
                         int end = Math.min((Integer) request.getAttribute("totalPages"), (Integer) request.getAttribute("currentPage") + 2);
                         String ctx = request.getContextPath();
                     %>

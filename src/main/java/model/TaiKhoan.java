@@ -4,7 +4,7 @@ public class TaiKhoan {
 
     private int maTK;
     private String tenDangNhap;
-    private String matKhau; // lưu thẳng cho đơn giản (đổi thành hash nếu cần)
+    private String matKhau; 
     private String chucVu;
 
     public int getMaTK() {

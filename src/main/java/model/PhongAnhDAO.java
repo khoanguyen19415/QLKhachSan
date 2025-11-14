@@ -42,7 +42,6 @@ public class PhongAnhDAO {
         }
     }
 
-    // Trả về object PhongAnh theo id
     public PhongAnh getById(int maAnh) {
         String sql = "SELECT * FROM PhongAnh WHERE MaAnh = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -62,7 +61,6 @@ public class PhongAnhDAO {
         return null;
     }
 
-    // Xóa bản ghi ảnh theo id
     public boolean delete(int maAnh) {
         String sql = "DELETE FROM PhongAnh WHERE MaAnh = ?";
         try (Connection conn = DBConnection.getConnection();

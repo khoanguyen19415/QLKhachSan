@@ -30,7 +30,6 @@ public class PhongDAO {
         return list;
     }
 
-    // ✅ Hàm thêm phòng
     public void insert(Phong p) {
         String sql = "INSERT INTO Phong (TenPhong, LoaiPhong, Gia, MoTa, TrangThai) VALUES (?, ?, ?, ?, ?)";
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -61,7 +60,6 @@ public class PhongDAO {
         }
     }
 
-    // ✅ Hàm xóa phòng theo mã
     public void delete(int maPhong) {
         String sql = "DELETE FROM Phong WHERE MaPhong=?";
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -97,7 +95,6 @@ public class PhongDAO {
         return list;
     }
 
-    // ===== MỚI: cập nhật trạng thái phòng =====
     public boolean updateStatus(int maPhong, String trangThai) {
         String sql = "UPDATE Phong SET TrangThai = ? WHERE MaPhong = ?";
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -110,7 +107,6 @@ public class PhongDAO {
         }
     }
 
-    // Tuỳ: lấy 1 phòng theo id (nếu cần)
     public Phong getById(int maPhong) {
         String sql = "SELECT MaPhong, TenPhong, LoaiPhong, Gia, MoTa, TrangThai FROM Phong WHERE MaPhong = ?";
         try (Connection con = DBConnection.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -153,19 +149,15 @@ public class PhongDAO {
         if (s.contains("trống")) {
             return "Trống";
         }
-        // nếu có từ "hủy" hay "đã trả" v.v. => phòng hiện không đang bị đặt (ở đây mình coi là Trống)
         if (s.contains("hủy") || s.contains("trả")) {
             return "Trống";
         }
-        // nếu có "đặt" hoặc "đang" hoặc "nhận" => coi là đã đặt/không trống
         if (s.contains("đặt") || s.contains("đang") || s.contains("nhận")) {
             return "Đã đặt";
         }
-        // mặc định nếu ko rõ, giữ "Đã đặt" an toàn (không cho đặt trùng)
         return "Đã đặt";
     }
 
-    // --- mới: đếm tổng phòng ---
     public int countAllPhong() {
         String sql = "SELECT COUNT(*) AS cnt FROM Phong";
         try (Connection conn = DBConnection.getConnection(); Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {

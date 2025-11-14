@@ -9,6 +9,7 @@
         <title>Quản lý đặt phòng - Sunshine Hotel</title>
         <%@ include file="layout/header.jsp" %>
         <link rel="stylesheet" href="<%= request.getContextPath()%>/css/admin.css">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </head>
 
     <body>
@@ -48,6 +49,8 @@
                                 <th>Danh sách phòng</th>
                                 <th>Ngày nhận</th>
                                 <th>Ngày trả</th>
+                                <th>Thao tác</th>
+
                             </tr>
                         </thead>
                         <tbody>
@@ -141,6 +144,14 @@
                                     <td class="text-center">
                                         <fmt:formatDate value="${dp.ngayTra}" pattern="yyyy-MM-dd" />
                                     </td>
+                                    <td class="text-center">
+                                        <a href="${pageContext.request.contextPath}/QL-HoaDon?action=view&id=${dp.maDatPhong}" 
+                                           class="btn btn-sm btn-dark">
+                                            <i class="bi bi-receipt-cutoff"></i> Hóa đơn
+                                        </a>
+                                    </td>
+
+
                                 </tr>
                             </c:forEach>
                         </tbody>

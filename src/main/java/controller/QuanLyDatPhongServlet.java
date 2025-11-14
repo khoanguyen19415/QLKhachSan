@@ -25,9 +25,9 @@ public class QuanLyDatPhongServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
-
+//        request.setCharacterEncoding("UTF-8");
+//        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
         String action = request.getParameter("action");
         if (action == null) {
             action = "list";
@@ -82,7 +82,6 @@ public class QuanLyDatPhongServlet extends HttpServlet {
     private void search(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String keyword = request.getParameter("keyword");
-        // Implement search in DAO if needed; fallback: list all
         list(request, response);
     }
 
@@ -98,18 +97,14 @@ public class QuanLyDatPhongServlet extends HttpServlet {
                 return;
             }
 
-            // 1) Cập nhật DatPhong + ChiTietDatPhong (đã đồng bộ trong DAO)
             boolean ok1 = dpDAO.updateStatus(id, trangThaiDon);
 
-            // ✅ Gọi DAO cập nhật từng ChiTietDatPhong để đồng bộ trạng thái phòng
             ChiTietDatPhongDAO ctdpDAO = new ChiTietDatPhongDAO();
 
-            // 2) Cập nhật status của bảng Phong cho từng phòng trong đơn
             boolean ok2 = true;
             List<ChiTietDatPhong> chiTietList = dp.getChiTiet();
             if (chiTietList != null && !chiTietList.isEmpty()) {
                 for (ChiTietDatPhong c : chiTietList) {
-                    // 🔥 Gọi đúng hàm này để trigger đồng bộ Phòng + Đơn
                     boolean updated = ctdpDAO.updateTrangThai(c.getMaCTDP(), trangThaiDon);
                     if (!updated) {
                         ok2 = false;
@@ -121,7 +116,7 @@ public class QuanLyDatPhongServlet extends HttpServlet {
 
             if (ok1 && ok2) {
                 request.getSession().setAttribute("success", "Cập nhật trạng thái thành công!");
-            }  else {
+            } else {
                 request.getSession().setAttribute("error", "Không thể cập nhật trạng thái.");
             }
 

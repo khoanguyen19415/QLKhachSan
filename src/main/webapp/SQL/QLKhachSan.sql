@@ -1,12 +1,9 @@
--- TẠO DATABASE
 CREATE DATABASE QLKhachSan;
 GO
 USE QLKhachSan;
 GO
 
--- ======================
 -- BẢNG TÀI KHOẢN
--- ======================
 CREATE TABLE TaiKhoan (
     MaTK INT IDENTITY(1,1) PRIMARY KEY,
     TenDangNhap NVARCHAR(50) UNIQUE NOT NULL,
@@ -15,9 +12,7 @@ CREATE TABLE TaiKhoan (
 );
 GO
 
--- ======================
 -- BẢNG KHÁCH HÀNG
--- ======================
 CREATE TABLE KhachHang (
     MaKH INT IDENTITY(1,1) PRIMARY KEY,
     MaTK INT NULL,
@@ -29,9 +24,7 @@ CREATE TABLE KhachHang (
 );
 GO
 
--- ======================
 -- BẢNG PHÒNG
--- ======================
 CREATE TABLE Phong (
     MaPhong INT IDENTITY(1,1) PRIMARY KEY,
     TenPhong NVARCHAR(100) NOT NULL,
@@ -43,9 +36,7 @@ CREATE TABLE Phong (
 );
 GO
 
--- ======================
 -- BẢNG ẢNH PHÒNG
--- ======================
 CREATE TABLE PhongAnh (
     MaAnh INT IDENTITY(1,1) PRIMARY KEY,
     MaPhong INT NOT NULL,
@@ -54,9 +45,7 @@ CREATE TABLE PhongAnh (
 );
 GO
 
--- ======================
 -- BẢNG CHI TIẾT PHÒNG
--- ======================
 CREATE TABLE ChiTietPhong (
     MaCTP INT IDENTITY	(1,1) PRIMARY KEY,
     MaPhong INT NOT NULL,
@@ -66,9 +55,7 @@ CREATE TABLE ChiTietPhong (
 );
 GO
 
--- ======================
--- BẢNG ĐẶT PHÒNG (ĐƠN CHÍNH)
--- ======================
+-- BẢNG ĐẶT PHÒNG
 CREATE TABLE DatPhong (
     MaDatPhong INT IDENTITY(1,1) PRIMARY KEY,
     MaKH INT NOT NULL,
@@ -82,9 +69,7 @@ CREATE TABLE DatPhong (
 );
 GO
 
--- ======================
 -- BẢNG CHI TIẾT ĐẶT PHÒNG
--- ======================
 CREATE TABLE ChiTietDatPhong (
     MaCTDP INT IDENTITY(1,1) PRIMARY KEY,
     MaDatPhong INT NOT NULL,
@@ -97,10 +82,31 @@ CREATE TABLE ChiTietDatPhong (
     FOREIGN KEY (MaPhong) REFERENCES Phong(MaPhong)
 );
 GO
+-- Bảng hóa đơn 
+CREATE TABLE HoaDon (
+    MaHoaDon INT IDENTITY(1,1) PRIMARY KEY,
+    MaDatPhong INT NOT NULL,
+    MaKH INT NOT NULL,
+    NgayLap DATETIME DEFAULT GETDATE(),
+    TongTien DECIMAL(18,2) NOT NULL,
+    DaThanhToan BIT DEFAULT 0,
+    FOREIGN KEY (MaDatPhong) REFERENCES DatPhong(MaDatPhong),
+    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
+);
+GO
 
--- ======================
--- DỮ LIỆU MẪU
--- ======================
+-- Bảng chi tiết hóa đơn 
+CREATE TABLE HoaDonChiTiet (
+    MaHDCT INT IDENTITY(1,1) PRIMARY KEY,
+    MaHoaDon INT NOT NULL,
+    MaPhong INT NOT NULL,
+    DonGia DECIMAL(18,2) NOT NULL,
+    SoDem INT NOT NULL,
+    ThanhTien DECIMAL(18,2) NOT NULL,
+    FOREIGN KEY (MaHoaDon) REFERENCES HoaDon(MaHoaDon) ON DELETE CASCADE,
+    FOREIGN KEY (MaPhong) REFERENCES Phong(MaPhong)
+);
+GO
 
 -- TÀI KHOẢN
 INSERT INTO TaiKhoan (TenDangNhap, MatKhau, ChucVu)
@@ -122,20 +128,10 @@ GO
 -- PHÒNG
 INSERT INTO Phong (TenPhong, LoaiPhong, Gia, MoTa, TrangThai)
 VALUES
-<<<<<<< HEAD
 (N'Phòng Standard 101', N'Standard', 500000, N'Tiện nghi cơ bản', N'Trống'),
 (N'Phòng Deluxe 102', N'Deluxe', 850000, N'Ban công view biển', N'Trống'),
 (N'Phòng Suite 201', N'Suite', 1200000, N'Phòng cao cấp có phòng khách riêng', N'Trống'),
-(N'Phòng VIP 301', N'VIP', 1800000, N'Phòng có bồn tắm và minibar', N'Trống'),
-(N'Phòng Presidential 401', N'Presidential Suite', 3500000, N'Phòng tổng thống sang trọng', N'Trống');
-=======
-(N'Phòng Deluxe 101', N'Deluxe', 850000, N'Phòng rộng rãi, có ban công view biển', N'Trống'),
-(N'Phòng Standard 102', N'Standard', 500000, N'Phòng tiêu chuẩn, đầy đủ tiện nghi cơ bản', N'Trống'),
-(N'Phòng Suite 201', N'Suite', 1200000, N'Phòng cao cấp có phòng khách riêng', N'Trống'),
-(N'Phòng VIP 202', N'VIP', 950000, N'Phòng cao cấp có đầy đủ mọi thứ trên đời', N'Trống'),
-(N'Phòng VIP 301', N'VIP', 1800000, N'Phòng cao cấp có bồn tắm và minibar', N'Trống'),
-(N'Phòng VIP 302', N'VIP', 350000, N'Phòng cực cao cấp dành cho đại gia', N'Trống');
->>>>>>> 77590fdc33d76c6c1191217ed61e27aa6f2d924d
+(N'Phòng VIP 301', N'VIP', 1800000, N'Phòng có bồn tắm và minibar', N'Trống');
 GO
 
 -- CHI TIẾT PHÒNG
@@ -144,11 +140,9 @@ VALUES
 (1, N'Tivi', N'Màn hình phẳng 50 inch'),
 (2, N'Máy lạnh', N'Điều hòa inverter'),
 (3, N'Giường đôi', N'Nệm cao su non'),
-(4, N'Minibar', N'Có bia, nước ngọt miễn phí'),
-(5, N'Bồn tắm', N'Thiết kế cao cấp');
+(4, N'Minibar', N'Có bia, nước ngọt miễn phí');
 GO
 
-<<<<<<< HEAD
 -- ĐƠN ĐẶT PHÒNG
 INSERT INTO DatPhong (MaKH, NgayNhan, NgayTra, TongTien, TrangThai)
 VALUES
@@ -163,5 +157,3 @@ VALUES
 (1, 2, 850000, N'Phòng đôi', N'Chờ duyệt'),
 (2, 3, 1200000, N'Yêu cầu thêm giường phụ', N'Chờ duyệt');
 GO
-=======
->>>>>>> 77590fdc33d76c6c1191217ed61e27aa6f2d924d

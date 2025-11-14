@@ -43,8 +43,8 @@ public class QuanLyKhServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
+//        request.setCharacterEncoding("UTF-8");
+//        response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
 
         String action = request.getParameter("action");
@@ -69,7 +69,7 @@ public class QuanLyKhServlet extends HttpServlet {
                 case "delete":
                     XuLyDelete(request, response);
                     break;
-                case "update": // mới: xử lý AJAX cập nhật khách hàng
+                case "update":
                     XuLySua(request, response);
                     break;
             }
@@ -149,12 +149,16 @@ public class QuanLyKhServlet extends HttpServlet {
                 return;
             }
             int maKH = Integer.parseInt(idStr);
+
+            KhachHang khCu = khDAO.getById(maKH);
+            Integer maTK = khCu.getMaTK();
+
             String hoTen = request.getParameter("hoTen");
             String soDienThoai = request.getParameter("soDienThoai");
             String email = request.getParameter("email");
             String diaChi = request.getParameter("diaChi");
 
-            KhachHang kh = new KhachHang(maKH, hoTen, soDienThoai, email, diaChi);
+            KhachHang kh = new KhachHang(maKH, maTK, hoTen, soDienThoai, email, diaChi);
 
             boolean ok = khDAO.updateKhachHang(kh);
             if (ok) {
@@ -199,7 +203,7 @@ public class QuanLyKhServlet extends HttpServlet {
         String sizeParam = request.getParameter("size");
 
         int page = 1;
-        int pageSize = 6; // số khách hàng / trang
+        int pageSize = 6;
 
         try {
             if (pageParam != null) {
@@ -217,7 +221,7 @@ public class QuanLyKhServlet extends HttpServlet {
             pageSize = 6;
         }
 
-        int totalItems = khDAO.countAll(); // tổng khách hàng
+        int totalItems = khDAO.countAll();
         int totalPages = (int) Math.ceil((double) totalItems / pageSize);
         if (totalPages <= 0) {
             totalPages = 1;

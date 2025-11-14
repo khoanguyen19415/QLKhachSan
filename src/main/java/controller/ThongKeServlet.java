@@ -42,16 +42,16 @@ public class ThongKeServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         String action = request.getParameter("action");
         if (action == null) {
-            action = "overview"; // mặc định
+            action = "overview";
         }
         switch (action) {
             case "chart":
-                handleOverview(request, response); // <-- Trả JSON
+                handleOverview(request, response);
                 break;
 
             case "overview":
             default:
-                handleChartData(request, response); // <-- Hiển thị JSP
+                handleChartData(request, response);
                 break;
         }
 
@@ -116,15 +116,21 @@ public class ThongKeServlet extends HttpServlet {
         response.setContentType("application/json;charset=UTF-8");
         PrintWriter out = response.getWriter();
 
-        // Lấy dữ liệu từ DAO
         List<Double> doanhThu6Thang = thongKeDAO.getDoanhThu6ThangGanNhat();
         List<Integer> tyLeLoaiPhong = thongKeDAO.getTiLeDatPhongTheoLoai();
+        List<Integer> months = thongKeDAO.get6MonthsLabels();
 
-        // Chuyển danh sách thành chuỗi JSON thủ công
         StringBuilder json = new StringBuilder();
         json.append("{");
 
-        // Chuyển danh sách doanh thu
+        json.append("\"months\": [");
+        for (int i = 0; i < months.size(); i++) {
+            json.append(months.get(i));
+            if (i < months.size() - 1) {
+                json.append(",");
+            }
+        }
+        json.append("],");
         json.append("\"doanhThu\": [");
         for (int i = 0; i < doanhThu6Thang.size(); i++) {
             json.append(doanhThu6Thang.get(i));
@@ -134,7 +140,6 @@ public class ThongKeServlet extends HttpServlet {
         }
         json.append("],");
 
-        // Chuyển danh sách tỉ lệ loại phòng
         json.append("\"tiLe\": [");
         for (int i = 0; i < tyLeLoaiPhong.size(); i++) {
             json.append(tyLeLoaiPhong.get(i));
@@ -146,7 +151,6 @@ public class ThongKeServlet extends HttpServlet {
 
         json.append("}");
 
-        // Xuất JSON về frontend
         out.print(json.toString());
         out.flush();
     }

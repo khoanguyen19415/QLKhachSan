@@ -99,7 +99,7 @@ fetch("${pageContext.request.contextPath}/Thong-Ke?action=chart")
         new Chart(ctx1, {
             type: 'line',
             data: {
-                labels: ['Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10'],
+                labels: data.months.map(m => "Tháng " + m),
                 datasets: [{
                     label: 'Doanh thu (triệu đồng)',
                     data: data.doanhThu,

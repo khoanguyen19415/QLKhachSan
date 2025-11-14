@@ -169,12 +169,11 @@ public class QuanLyPhongServlet extends HttpServlet {
     }
 
     private void ListPhong(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // --- Đọc tham số phân trang ---
         String pageParam = request.getParameter("page");
         String sizeParam = request.getParameter("size");
 
         int page = 1;
-        int pageSize = 6; // mặc định 6 phòng / trang
+        int pageSize = 6; 
 
         try {
             if (pageParam != null) {
@@ -192,8 +191,7 @@ public class QuanLyPhongServlet extends HttpServlet {
             pageSize = 6;
         }
 
-        // --- Tính tổng số phòng & tổng số trang ---
-        int totalItems = phongDAO.countAllPhong(); // cần có hàm này trong DAO
+        int totalItems = phongDAO.countAllPhong(); 
         int totalPages = (int) Math.ceil((double) totalItems / pageSize);
         if (totalPages <= 0) {
             totalPages = 1;
@@ -204,10 +202,8 @@ public class QuanLyPhongServlet extends HttpServlet {
 
         int offset = (page - 1) * pageSize;
 
-        // --- Lấy danh sách phòng theo phân trang ---
         List<Phong> dsPhong = phongDAO.getPaged(offset, pageSize);
 
-        // --- Đặt dữ liệu cho JSP ---
         request.setAttribute("dsPhong", dsPhong);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);

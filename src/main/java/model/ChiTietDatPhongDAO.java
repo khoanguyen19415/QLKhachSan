@@ -5,6 +5,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.HoaDon;
+import model.HoaDonDAO;
+import model.HoaDonChiTiet;
+import model.HoaDonChiTietDAO;
+
 public class ChiTietDatPhongDAO {
 
     public List<ChiTietDatPhong> getByDatPhong(int maDatPhong) {
@@ -65,11 +70,10 @@ public class ChiTietDatPhongDAO {
         return false;
     }
 
-    // Cập nhật trạng thái cho 1 chi tiết (sẽ đồng bộ phòng và đơn)
     public boolean updateTrangThai(int maCTDP, String trangThai) {
         String sqlUpdateCT = "UPDATE ChiTietDatPhong SET TrangThai = ? WHERE MaCTDP = ?";
         try (Connection conn = DBConnection.getConnection()) {
-            conn.setAutoCommit(false); // dùng transaction
+            conn.setAutoCommit(false);
 
             try (PreparedStatement ps = conn.prepareStatement(sqlUpdateCT)) {
                 ps.setString(1, trangThai);
@@ -77,6 +81,7 @@ public class ChiTietDatPhongDAO {
                 int rows = ps.executeUpdate();
 
                 if (rows > 0) {
+
                     int maPhong = 0;
                     int maDatPhong = 0;
 
@@ -91,18 +96,82 @@ public class ChiTietDatPhongDAO {
                         }
                     }
 
-                    // map trạng thái chi tiết -> trạng thái Phong hợp lệ theo CHECK constraint
+                    if (trangThai.equalsIgnoreCase("Đã trả phòng")
+                            || trangThai.equalsIgnoreCase("Đã trả")) {
+
+                        String sqlDP = "SELECT NgayNhan, NgayTra, MaKH FROM DatPhong WHERE MaDatPhong = ?";
+                        Date ngayNhan = null, ngayTra = null;
+                        int maKH = 0;
+
+                        try (PreparedStatement psDP = conn.prepareStatement(sqlDP)) {
+                            psDP.setInt(1, maDatPhong);
+                            ResultSet rsDP = psDP.executeQuery();
+                            if (rsDP.next()) {
+                                ngayNhan = rsDP.getDate("NgayNhan");
+                                ngayTra = rsDP.getDate("NgayTra");
+                                maKH = rsDP.getInt("MaKH");
+                            }
+                        }
+
+                        long soDem = (ngayTra.getTime() - ngayNhan.getTime()) / (1000 * 60 * 60 * 24);
+                        if (soDem < 1) {
+                            soDem = 1;
+                        }
+
+                        double donGia = 0;
+                        String sqlGia = "SELECT Gia FROM Phong WHERE MaPhong = ?";
+                        try (PreparedStatement psGia = conn.prepareStatement(sqlGia)) {
+                            psGia.setInt(1, maPhong);
+                            ResultSet rsGia = psGia.executeQuery();
+                            if (rsGia.next()) {
+                                donGia = rsGia.getDouble("Gia");
+                            }
+                        }
+
+                        double thanhTien = donGia * soDem;
+
+                        HoaDonDAO hdDAO = new HoaDonDAO();
+
+                        int maHoaDon = -1;
+                        String sqlCheckHD = "SELECT MaHoaDon FROM HoaDon WHERE MaDatPhong = ?";
+                        try (PreparedStatement psCheck = conn.prepareStatement(sqlCheckHD)) {
+                            psCheck.setInt(1, maDatPhong);
+                            ResultSet rsCheck = psCheck.executeQuery();
+                            if (rsCheck.next()) {
+                                maHoaDon = rsCheck.getInt(1);
+                            }
+                        }
+
+                        if (maHoaDon == -1) {
+                            HoaDon hd = new HoaDon();
+                            hd.setMaDatPhong(maDatPhong);
+                            hd.setMaKH(maKH);
+                            hd.setTongTien(thanhTien);
+                            hd.setDaThanhToan(false);
+                            maHoaDon = hdDAO.insert(hd);
+                        }
+
+                        HoaDonChiTiet ct = new HoaDonChiTiet();
+                        ct.setMaHoaDon(maHoaDon);
+                        ct.setMaPhong(maPhong);
+                        ct.setDonGia(donGia);
+                        ct.setSoDem((int) soDem);
+                        ct.setThanhTien(thanhTien);
+
+                        new HoaDonChiTietDAO().insert(ct);
+                    }
+
+
                     String phongStatus;
-                    if (trangThai != null && trangThai.equalsIgnoreCase("Đang ở")) {
-                        phongStatus = "Đang ở";        // hợp lệ
-                    } else if (trangThai != null && trangThai.equalsIgnoreCase("Đã duyệt")) {
-                        phongStatus = "Đã đặt";       // admin duyệt -> phòng bị đánh là đã đặt
-                    } else if (trangThai != null && (trangThai.equalsIgnoreCase("Hủy")
+                    if (trangThai.equalsIgnoreCase("Đang ở")) {
+                        phongStatus = "Đang ở";
+                    } else if (trangThai.equalsIgnoreCase("Đã duyệt")) {
+                        phongStatus = "Đã đặt";
+                    } else if (trangThai.equalsIgnoreCase("Hủy")
                             || trangThai.equalsIgnoreCase("Đã trả")
-                            || trangThai.equalsIgnoreCase("Đã trả phòng"))) {
-                        phongStatus = "Trống";        // hủy/đã trả -> trống
+                            || trangThai.equalsIgnoreCase("Đã trả phòng")) {
+                        phongStatus = "Trống";
                     } else {
-                        // mặc định giữ Trống để không phá constraint; "Chờ duyệt" không đổi trạng thái Phòng
                         phongStatus = "Trống";
                     }
 
@@ -113,30 +182,29 @@ public class ChiTietDatPhongDAO {
                         ps3.executeUpdate();
                     }
 
-                    // Đồng bộ trạng thái đơn (DatPhong) dựa trên các chi tiết
                     syncTrangThaiDon(conn, maDatPhong);
 
                     conn.commit();
                     return true;
+
                 } else {
                     conn.rollback();
                 }
+
             } catch (Exception ex) {
                 conn.rollback();
                 ex.printStackTrace();
             } finally {
-                try {
-                    conn.setAutoCommit(true);
-                } catch (Exception ignored) {
-                }
+                conn.setAutoCommit(true);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         return false;
     }
 
-    // Hàm đồng bộ trạng thái đơn đặt phòng theo chi tiết phòng
     private void syncTrangThaiDon(Connection conn, int maDatPhong) throws SQLException {
         String sql = "UPDATE DatPhong "
                 + "SET TrangThai = CASE "
@@ -160,7 +228,6 @@ public class ChiTietDatPhongDAO {
             ps.executeUpdate();
         }
     }
-// ✅ Hủy tất cả đơn khác trùng phòng & thời gian
 
     public void huyDonTrungPhong(int maPhong, java.sql.Date ngayNhan, java.sql.Date ngayTra, int maCTDP) {
         String sql = "UPDATE ctdp "

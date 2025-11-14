@@ -16,102 +16,153 @@ public class ThongKeDAO {
         }
     }
 
-    // ------------------------
-    // 1️⃣ Tổng số phòng
-    // ------------------------
     public int getTongPhong() {
         String sql = "SELECT COUNT(*) FROM Phong";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) { e.printStackTrace(); }
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
-    // ------------------------
-    // 2️⃣ Số phòng đang hoạt động (Trống hoặc Đang ở)
-    // ------------------------
+
     public int getPhongHoatDong() {
         String sql = "SELECT COUNT(*) FROM Phong WHERE TrangThai IN (N'Trống', N'Đang ở')";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) { e.printStackTrace(); }
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
-    // ------------------------
-    // 3️⃣ Số khách đang lưu trú (tức là đang có đơn “Đang ở”)
-    // ------------------------
+
     public int getKhachDangLuuTru() {
-        String sql = "SELECT COUNT(DISTINCT MaKH) FROM DatPhong WHERE TrangThai = N'Đang ở'";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) { e.printStackTrace(); }
+        String sql = "SELECT COUNT(DISTINCT MaKH) FROM ChiTietDatPhong WHERE TrangThai = N'Đang ở'";
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
-    // ------------------------
-    // 4️⃣ Doanh thu tháng hiện tại (tính từ ChiTietDatPhong)
-    // ------------------------
+
     public double getDoanhThuThang() {
-        String sql = "SELECT ISNULL(SUM(ct.Gia * DATEDIFF(day, dp.NgayNhan, dp.NgayTra)), 0) AS DoanhThu FROM DatPhong dp JOIN ChiTietDatPhong ct ON dp.MaDatPhong = ct.MaDatPhong WHERE MONTH(dp.NgayTra) = MONTH(GETDATE()) AND YEAR(dp.NgayTra) = YEAR(GETDATE()) AND dp.TrangThai IN (N'Đã trả phòng', N'Đã nhận')";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getDouble("DoanhThu");
-        } catch (Exception e) { e.printStackTrace(); }
+        String sql
+                = "SELECT ISNULL(SUM(ct.Gia * DATEDIFF(day, dp.NgayNhan, dp.NgayTra)), 0) AS DoanhThu "
+                + "FROM DatPhong dp "
+                + "JOIN ChiTietDatPhong ct ON dp.MaDatPhong = ct.MaDatPhong "
+                + "WHERE MONTH(dp.NgayTra) = MONTH(GETDATE()) "
+                + "  AND YEAR(dp.NgayTra) = YEAR(GETDATE()) "
+                + "  AND ct.TrangThai IN (N'Đã trả phòng', N'Đã trả')";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getDouble("DoanhThu");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
-    // ------------------------
-    // 5️⃣ Số phòng cần bảo trì
-    // ------------------------
+
     public int getPhongCanBaoTri() {
         String sql = "SELECT COUNT(*) FROM Phong WHERE TrangThai = N'Bảo trì'";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) { e.printStackTrace(); }
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
-    // ------------------------
-    // 6️⃣ Doanh thu 6 tháng gần nhất (đơn giản, tính trung bình theo tháng)
-    // ------------------------
     public List<Double> getDoanhThu6ThangGanNhat() {
-        List<Double> list = new ArrayList<>();
-        String sql = "SELECT TOP 6 MONTH(dp.NgayTra) AS Thang, SUM(ct.Gia * DATEDIFF(day, dp.NgayNhan, dp.NgayTra)) AS TongTien FROM DatPhong dp JOIN ChiTietDatPhong ct ON dp.MaDatPhong = ct.MaDatPhong WHERE dp.NgayTra IS NOT NULL GROUP BY MONTH(dp.NgayTra) ORDER BY Thang";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        List<Double> result = new ArrayList<>();
+
+        String sql
+                = "SELECT MONTH(dp.NgayTra) AS Thang, "
+                + "       SUM(ct.Gia * DATEDIFF(day, dp.NgayNhan, dp.NgayTra)) AS TongTien "
+                + "FROM DatPhong dp "
+                + "JOIN ChiTietDatPhong ct ON dp.MaDatPhong = ct.MaDatPhong "
+                + "WHERE dp.NgayTra >= DATEADD(month, -6, GETDATE()) "
+                + "GROUP BY MONTH(dp.NgayTra)";
+
+        Map<Integer, Double> map = new HashMap<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
-                list.add(rs.getDouble("TongTien") / 1_000_000.0); // đổi sang triệu đồng
+                int month = rs.getInt("Thang");
+                double money = rs.getDouble("TongTien") / 1_000_000.0; 
+                map.put(month, money);
             }
-        } catch (Exception e) { e.printStackTrace(); }
-        return list;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Calendar cal = Calendar.getInstance();
+        int currentMonth = cal.get(Calendar.MONTH) + 1;
+
+        for (int i = 5; i >= 0; i--) {
+            int month = currentMonth - i;
+            if (month <= 0) {
+                month += 12;
+            }
+            result.add(map.getOrDefault(month, 0.0));
+        }
+
+        return result;
     }
 
-    // ------------------------
-    // 7️⃣ Tỉ lệ đặt phòng theo loại (đếm số phòng mỗi loại có trong ChiTietDatPhong)
-    // ------------------------
+
     public List<Integer> getTiLeDatPhongTheoLoai() {
         List<Integer> list = new ArrayList<>();
         String[] loaiPhong = {"Standard", "Deluxe", "Suite", "VIP", "Presidential Suite"};
         String sql = "SELECT p.LoaiPhong, COUNT(*) AS SoLuong FROM ChiTietDatPhong ct JOIN Phong p ON ct.MaPhong = p.MaPhong GROUP BY p.LoaiPhong";
 
         Map<String, Integer> map = new HashMap<>();
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 map.put(rs.getString("LoaiPhong"), rs.getInt("SoLuong"));
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        // Đảm bảo đúng thứ tự cố định
         for (String loai : loaiPhong) {
             list.add(map.getOrDefault(loai, 0));
         }
 
         return list;
     }
+
+    public List<Integer> get6MonthsLabels() {
+        List<Integer> list = new ArrayList<>();
+        Calendar cal = Calendar.getInstance();
+        int current = cal.get(Calendar.MONTH) + 1;
+
+        for (int i = 5; i >= 0; i--) {
+            int m = current - i;
+            if (m <= 0) {
+                m += 12;
+            }
+            list.add(m);
+        }
+        return list;
+    }
+
 }

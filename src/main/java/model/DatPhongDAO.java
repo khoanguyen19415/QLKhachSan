@@ -96,7 +96,6 @@ public class DatPhongDAO {
         return false;
     }
 
-    // ✅ CHỖ QUAN TRỌNG NHẤT — CẬP NHẬT ĐỒNG BỘ ĐƠN VÀ CHI TIẾT
     public boolean updateStatus(int maDatPhong, String trangThai) {
         String sqlDatPhong = "UPDATE DatPhong SET TrangThai = ? WHERE MaDatPhong = ?";
         String sqlChiTiet = "UPDATE ChiTietDatPhong SET TrangThai = ? WHERE MaDatPhong = ?";
@@ -106,12 +105,10 @@ public class DatPhongDAO {
 
             try (PreparedStatement ps1 = conn.prepareStatement(sqlDatPhong); PreparedStatement ps2 = conn.prepareStatement(sqlChiTiet)) {
 
-                // Cập nhật đơn chính
                 ps1.setString(1, trangThai);
                 ps1.setInt(2, maDatPhong);
                 ps1.executeUpdate();
 
-                // Cập nhật tất cả chi tiết thuộc đơn
                 ps2.setString(1, trangThai);
                 ps2.setInt(2, maDatPhong);
                 ps2.executeUpdate();
@@ -175,10 +172,23 @@ public class DatPhongDAO {
 
     public List<DatPhong> getByKhachHang(int maKH) {
         List<DatPhong> list = new ArrayList<>();
-        String sql = "SELECT * FROM DatPhong WHERE MaKH = ? ORDER BY MaDatPhong DESC";
+
+        String sql
+                = "SELECT dp.MaDatPhong, dp.MaKH, dp.NgayDat, dp.NgayNhan, dp.NgayTra, "
+                + "STRING_AGG(p.TenPhong, ', ') AS TenPhong, "
+                + "STRING_AGG(ctdp.TrangThai, ',') AS TrangThaiCT "
+                + "FROM DatPhong dp "
+                + "LEFT JOIN ChiTietDatPhong ctdp ON dp.MaDatPhong = ctdp.MaDatPhong "
+                + "LEFT JOIN Phong p ON ctdp.MaPhong = p.MaPhong "
+                + "WHERE dp.MaKH = ? "
+                + "GROUP BY dp.MaDatPhong, dp.MaKH, dp.NgayDat, dp.NgayNhan, dp.NgayTra "
+                + "ORDER BY dp.MaDatPhong DESC";
+
         try (Connection conn = DBConnection.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
             ps.setInt(1, maKH);
             ResultSet rs = ps.executeQuery();
+
             while (rs.next()) {
                 DatPhong dp = new DatPhong();
                 dp.setMaDatPhong(rs.getInt("MaDatPhong"));
@@ -186,19 +196,19 @@ public class DatPhongDAO {
                 dp.setNgayDat(rs.getDate("NgayDat"));
                 dp.setNgayNhan(rs.getDate("NgayNhan"));
                 dp.setNgayTra(rs.getDate("NgayTra"));
-                dp.setTongTien(rs.getDouble("TongTien"));
-                dp.setTrangThai(rs.getString("TrangThai"));
                 dp.setTenPhong(rs.getString("TenPhong"));
-                dp.setChiTiet(new ChiTietDatPhongDAO().getByDatPhong(dp.getMaDatPhong()));
+
+                dp.setTrangThai(rs.getString("TrangThaiCT"));
+
                 list.add(dp);
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return list;
     }
 
-    // 🔍 Tìm đơn đặt phòng hiện có của khách cùng ngày nhận & ngày trả
     public DatPhong findExistingBooking(int maKH, Date ngayNhan, Date ngayTra) {
         DatPhong dp = null;
         String sql = "SELECT * FROM DatPhong WHERE MaKH = ? AND NgayNhan = ? AND NgayTra = ? AND TrangThai IN (N'Chờ duyệt', N'Đã duyệt', N'Đang ở')";

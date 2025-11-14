@@ -36,9 +36,8 @@ public class QuanLyChiTietPhongServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Thiết lập charset
-        request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
+//        request.setCharacterEncoding("UTF-8");
+//        response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
 
         String action = request.getParameter("action");
@@ -84,7 +83,6 @@ public class QuanLyChiTietPhongServlet extends HttpServlet {
         try {
             maPhong = Integer.parseInt(idParam);
         } catch (Exception e) {
-            // nếu id không hợp lệ, redirect về danh sách phòng
             response.sendRedirect("QL-Phong");
             return;
         }
@@ -182,7 +180,6 @@ public class QuanLyChiTietPhongServlet extends HttpServlet {
                 }
             }
 
-            // 2) Xử lý upload ảnh mới (nếu có)
             Part filePart = request.getPart("anh");
             if (filePart != null && filePart.getSize() > 0) {
                 String appPath = request.getServletContext().getRealPath("");

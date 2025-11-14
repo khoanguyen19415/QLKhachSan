@@ -3,7 +3,7 @@ package model;
 public class KhachHang {
 
     private int maKH;
-    private Integer maTK; // có thể null nếu chưa liên kết tài khoản
+    private Integer maTK; 
     private String hoTen;
     private String soDienThoai;
     private String email;
@@ -21,7 +21,6 @@ public class KhachHang {
         this.diaChi = diaChi;
     }
 
-    // constructor khi tạo mới (chưa có maKH)
     public KhachHang(Integer maTK, String hoTen, String soDienThoai, String email, String diaChi) {
         this.maTK = maTK;
         this.hoTen = hoTen;
